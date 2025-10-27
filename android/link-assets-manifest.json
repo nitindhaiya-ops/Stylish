@@ -1,0 +1,17 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "src/assets/fonts/LibreCaslonText-Bold.ttf",
+      "sha1": "5f26f2b1814c5b6e7c96c9cf2c67252f647a3292"
+    },
+    {
+      "path": "src/assets/fonts/LibreCaslonText-Italic.ttf",
+      "sha1": "9a9283619f47bd99399e545f32befe1f750a728f"
+    },
+    {
+      "path": "src/assets/fonts/LibreCaslonText-Regular.ttf",
+      "sha1": "9b11268cc82990340feefc434a869dd12d7fc1f0"
+    }
+  ]
+}
