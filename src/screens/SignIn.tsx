@@ -6,6 +6,8 @@ import { RootStackParamList } from '../navigation/RootNavigator';
 import { COLORS } from '../constants/colors';
 import CustomButton from '../components/CustomButton';
 import Svg, { ClipPath, Defs, G, Path, Rect } from 'react-native-svg';
+import CustomInput from '../components/CustomInput';
+import InputWithIcon from '../components/InputWithIcon';
 
 
 type Props = {
@@ -27,25 +29,16 @@ const SignIn: React.FC<Props> = ({ navigation }) => {
         <Text style={styles.title}>Back!</Text>
       </View>
 
-      <TextInput
-        placeholder="Username or Email"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.input}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <TextInput
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        style={styles.input}
-        secureTextEntry
-      />
+      <View style={styles.inputContainer}>
+        <InputWithIcon icon="user" placeholder="Email or username" keyboardType="email-address" />
+        <InputWithIcon icon="lock" secure placeholder="Password" />
+      </View>
 
-      <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-        <Text style={styles.link}>Forgot password?</Text>
-      </TouchableOpacity>
+      <View style={{ alignItems: 'flex-end' }}>
+        <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+          <Text style={styles.link}>Forgot password?</Text>
+        </TouchableOpacity>
+      </View>
 
       <CustomButton
         text="Login"
@@ -53,8 +46,8 @@ const SignIn: React.FC<Props> = ({ navigation }) => {
         backgroundColor={COLORS.primary}
       />
 
-      <View>
-        <Text>
+      <View style={{ alignItems: 'center', marginVertical: 10 }}>
+        <Text style={{ color: COLORS.text, marginTop: 75, color : '#575757' }}>
           - OR Continue with -
         </Text>
       </View>
@@ -87,7 +80,7 @@ const SignIn: React.FC<Props> = ({ navigation }) => {
       </View>
 
       <View style={styles.row}>
-        <Text>Don't have an account? </Text>
+        <Text style={{fontWeight: 400}}>Create An Account </Text>
         <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
           <Text style={styles.link}>Sign up</Text>
         </TouchableOpacity>
@@ -101,10 +94,11 @@ const styles = StyleSheet.create({
   title: { fontSize: 38, fontWeight: '700', color: COLORS.black },
   titleContainer: { marginBottom: 40 },
   input: { borderWidth: 1, borderColor: '#EEE', padding: 12, borderRadius: 8, marginBottom: 12 },
-  link: { color: COLORS.primary, marginBottom: 20 },
+  link: { color: COLORS.primary, marginBottom: 20, textDecorationLine: 'underline', fontWeight: '500' },
   row: { flexDirection: 'row', justifyContent: 'center', marginTop: 18 },
   loginOptionsWrapper: { flexDirection: 'row', justifyContent: 'center', marginVertical: 20, gap: 20 },
   loginOptions: { borderWidth: 2, borderColor: COLORS.primary, padding: 12, borderRadius: '50%', backgroundColor: COLORS.primary_four },
+  inputContainer: { gap: 12, marginBottom: 12 },
 });
 
 export default SignIn;
