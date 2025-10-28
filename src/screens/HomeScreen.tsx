@@ -260,11 +260,27 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => {
             const active = item === selectedCategory;
+
+            const iconMap: Record<string, any> = {
+              All: require('../assets/img/category/cat1.png'),
+              Tops: require('../assets/img/category/cat2.png'),
+              Bottoms: require('../assets/img/category/cat3.png'),
+              Shoes: require('../assets/img/category/cat4.png'),
+              Outerwear: require('../assets/img/category/cat5.png'),
+              Dresses: require('../assets/img/category/cat1.png'),
+              Accessories: require('../assets/img/category/cat2.png'),
+            };
+
             return (
               <TouchableOpacity
                 onPress={() => setSelectedCategory(item)}
                 style={[styles.categoryPill, active ? styles.categoryActive : undefined]}
               >
+                <Image
+                  source={iconMap[item]} // Now safe with Record<string, any>
+                  style={styles.categoryIcon}
+                  resizeMode="contain"
+                />
                 <Text style={[styles.categoryText, active ? styles.categoryTextActive : undefined]}>
                   {item}
                 </Text>
@@ -273,7 +289,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           }}
         />
       </View>
-
       {/* Product Grid */}
       {loading ? (
         <View style={styles.loadingWrap}>
@@ -418,6 +433,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: '#F7F8FB',
     marginRight: 10,
+    textAlign: 'center',
+    alignItems: 'center',
   },
   categoryActive: { backgroundColor: COLORS.primary + '20' },
   categoryText: { fontSize: 13, color: '#333' },
@@ -534,6 +551,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#232327',
     fontWeight: '500',
+  },
+  categoryIcon: {
+    width: 56,
+    height: 56,
+    marginBottom: 4,
   },
 });
 
