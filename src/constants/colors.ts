@@ -1,4 +1,5 @@
 export const COLORS = {
+  body: '#F9F9F9',
   white: '#FFFFFF',
   black: '#000000',
   text: '#A8A8A9',
@@ -8,4 +9,5 @@ export const COLORS = {
   primary_four: '#FCF3F6',
   error: '#DC3545',
   success: '#52C41A',
+  blue : '#4392F9'
 };
