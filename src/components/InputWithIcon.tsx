@@ -13,7 +13,7 @@ import { UserIcon, LockIcon, EyeOpenIcon, EyeClosedIcon } from './icons/Icons';
 import { COLORS } from '../constants/colors';
 
 type Props = TextInputProps & {
-    icon?: 'user' | 'lock'; // left icon type
+    icon?: 'user' | 'lock' | 'mail'; // left icon type
     secure?: boolean; // if input is password
     placeholder?: string;
 };

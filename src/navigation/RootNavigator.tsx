@@ -7,6 +7,7 @@ import SignIn from '../screens/SignIn';
 import SignUp from '../screens/SignUp';
 import ForgotPassword from '../screens/ForgotPassword';
 import HomeScreen from '../screens/HomeScreen'; // later
+import getStartedScreen from '../screens/getStartedScreen';
 
 export type RootStackParamList = {
   Splash: undefined;
@@ -14,6 +15,7 @@ export type RootStackParamList = {
   SignUp: undefined;
   ForgotPassword: undefined;
   Home: undefined;
+  getStarted: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -24,6 +26,7 @@ export default function RootNavigator() {
       <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Splash">
         <Stack.Screen name="Splash" component={SplashScreen} />
         <Stack.Screen name="SignIn" component={SignIn} />
+        <Stack.Screen name="getStarted" component={getStartedScreen} />
         <Stack.Screen name="SignUp" component={SignUp} />
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
         <Stack.Screen name="Home" component={HomeScreen} />

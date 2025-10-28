@@ -18,9 +18,10 @@ const SignIn: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+
   const onSignIn = () => {
-    navigation.replace('Home');
-  };
+    navigation.replace('getStarted')
+  }
 
   return (
     <View style={styles.container}>
@@ -36,7 +37,7 @@ const SignIn: React.FC<Props> = ({ navigation }) => {
 
       <View style={{ alignItems: 'flex-end' }}>
         <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-          <Text style={styles.link}>Forgot password?</Text>
+          <Text style={styles.forgetLink}>Forgot password?</Text>
         </TouchableOpacity>
       </View>
 
@@ -94,7 +95,8 @@ const styles = StyleSheet.create({
   title: { fontSize: 38, fontWeight: '700', color: COLORS.black },
   titleContainer: { marginBottom: 40 },
   input: { borderWidth: 1, borderColor: '#EEE', padding: 12, borderRadius: 8, marginBottom: 12 },
-  link: { color: COLORS.primary, marginBottom: 20, textDecorationLine: 'underline', fontWeight: '500' },
+  link: { color: COLORS.primary, marginBottom: 20, fontWeight: '500', textDecorationLine: 'underline' },
+  forgetLink: { color: COLORS.primary, marginBottom: 20, fontWeight: '300' },
   row: { flexDirection: 'row', justifyContent: 'center', marginTop: 18 },
   loginOptionsWrapper: { flexDirection: 'row', justifyContent: 'center', marginVertical: 20, gap: 20 },
   loginOptions: { borderWidth: 2, borderColor: COLORS.primary, padding: 12, borderRadius: '50%', backgroundColor: COLORS.primary_four },
