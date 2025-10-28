@@ -1,4 +1,3 @@
-// src/screens/HomeScreen.tsx
 import React, { useState, useMemo } from 'react';
 import {
   View,
@@ -9,12 +8,12 @@ import {
   TouchableOpacity,
   TextInput,
   Dimensions,
-  Image,
   ActivityIndicator,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import { COLORS } from '../constants/colors';
+import ProductCard from '../components/ProductCard';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Home'>;
@@ -29,19 +28,19 @@ type Product = {
   name: string;
   price: number;
   category: string;
-  image?: string; // optional remote/local uri
+  image?: any;
   badge?: string;
 };
 
 const SAMPLE_PRODUCTS: Product[] = [
-  { id: 'p1', name: 'Classic Tee', price: 799, category: 'Tops' },
-  { id: 'p2', name: 'Slim Jeans', price: 1999, category: 'Bottoms' },
-  { id: 'p3', name: 'Sneaker Run', price: 3499, category: 'Shoes' },
-  { id: 'p4', name: 'Bomber Jacket', price: 4599, category: 'Outerwear', badge: 'New' },
-  { id: 'p5', name: 'Floral Dress', price: 2599, category: 'Dresses' },
-  { id: 'p6', name: 'Cap', price: 499, category: 'Accessories' },
-  { id: 'p7', name: 'Casual Shirt', price: 1099, category: 'Tops' },
-  { id: 'p8', name: 'Running Shorts', price: 899, category: 'Bottoms' },
+  { id: 'p1', name: 'Classic Tee', price: 799, category: 'Tops', image: require('../assets/img/products/p1.png') },
+  { id: 'p2', name: 'Slim Jeans', price: 1999, category: 'Bottoms', image: require('../assets/img/products/p2.png') },
+  { id: 'p3', name: 'Sneaker Run', price: 3499, category: 'Shoes', image: require('../assets/img/products/p3.png') },
+  { id: 'p4', name: 'Bomber Jacket', price: 4599, category: 'Outerwear', badge: 'New', image: require('../assets/img/products/p4.png') },
+  { id: 'p5', name: 'Floral Dress', price: 2599, category: 'Dresses', image: require('../assets/img/products/p5.png') },
+  { id: 'p6', name: 'Cap', price: 499, category: 'Accessories', image: require('../assets/img/products/p6.png') },
+  { id: 'p7', name: 'Casual Shirt', price: 1099, category: 'Tops', image: require('../assets/img/products/p7.png') },
+  { id: 'p8', name: 'Running Shorts', price: 899, category: 'Bottoms', image: require('../assets/img/products/p8.png') },
 ];
 
 const CATEGORIES = ['All', 'Tops', 'Bottoms', 'Shoes', 'Outerwear', 'Dresses', 'Accessories'];
@@ -49,7 +48,7 @@ const CATEGORIES = ['All', 'Tops', 'Bottoms', 'Shoes', 'Outerwear', 'Dresses', '
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [loading] = useState(false); // toggle on when fetching from API
+  const [loading] = useState(false);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -60,40 +59,21 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     });
   }, [query, selectedCategory]);
 
-  const renderProduct = ({ item }: { item: Product }) => (
-    <TouchableOpacity
-      style={styles.card}
-      activeOpacity={0.85}
-      onPress={() => navigation.navigate('Home' /* replace with Product details route when added */)}
-    >
-      <View style={styles.imagePlaceholder}>
-        {/* Replace with <Image source={{uri: item.image}} style={styles.image} /> when you have images */}
-        <Text style={styles.imageText}>{item.name.split(' ')[0]}</Text>
-      </View>
-
-      <View style={styles.cardContent}>
-        <Text numberOfLines={2} style={styles.productName}>{item.name}</Text>
-        <View style={styles.row}>
-          <Text style={styles.price}>₹{item.price}</Text>
-          {item.badge ? <View style={styles.badge}><Text style={styles.badgeText}>{item.badge}</Text></View> : null}
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
-
   return (
     <SafeAreaView style={styles.safe}>
+      {/* Header */}
       <View style={styles.header}>
         <View>
           <Text style={styles.logo}>Stylish</Text>
           <Text style={styles.sub}>New drops & curated picks</Text>
         </View>
 
-        <TouchableOpacity style={styles.cartBtn} onPress={() => { /* open cart later */ }}>
+        <TouchableOpacity style={styles.cartBtn}>
           <Text style={styles.cartText}>Cart</Text>
         </TouchableOpacity>
       </View>
 
+      {/* Search */}
       <View style={styles.searchRow}>
         <TextInput
           placeholder="Search styles, brands, items..."
@@ -102,11 +82,12 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           style={styles.searchInput}
           returnKeyType="search"
         />
-        <TouchableOpacity style={styles.filterBtn} onPress={() => { /* open filters */ }}>
+        <TouchableOpacity style={styles.filterBtn}>
           <Text style={{ fontWeight: '600' }}>Filter</Text>
         </TouchableOpacity>
       </View>
 
+      {/* Categories */}
       <View style={styles.categories}>
         <FlatList
           data={CATEGORIES}
@@ -127,16 +108,30 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         />
       </View>
 
+      {/* Product Grid */}
       {loading ? (
-        <View style={styles.loadingWrap}><ActivityIndicator size="large" /></View>
+        <View style={styles.loadingWrap}>
+          <ActivityIndicator size="large" />
+        </View>
       ) : (
         <FlatList
           data={filtered}
           keyExtractor={(i) => i.id}
           numColumns={2}
           contentContainerStyle={styles.list}
-          renderItem={renderProduct}
-          ListEmptyComponent={<View style={styles.empty}><Text>No items found</Text></View>}
+          renderItem={({ item }) => (
+            <ProductCard
+              title={item.name}
+              price={`₹${item.price}`}
+              image={item.image}
+              onPress={() => console.log('Tapped:', item.name)}
+            />
+          )}
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <Text>No items found</Text>
+            </View>
+          }
         />
       )}
     </SafeAreaView>
@@ -145,6 +140,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.white },
+
   header: {
     paddingHorizontal: 16,
     paddingTop: 16,
@@ -201,29 +197,6 @@ const styles = StyleSheet.create({
   categoryTextActive: { color: COLORS.primary, fontWeight: '700' },
 
   list: { paddingHorizontal: CARD_MARGIN, paddingTop: 16, paddingBottom: 40 },
-  card: {
-    width: CARD_WIDTH,
-    marginHorizontal: CARD_MARGIN / 2,
-    marginBottom: 16,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#F1F2F6',
-  },
-  imagePlaceholder: {
-    height: CARD_WIDTH,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FAFBFF',
-  },
-  imageText: { fontSize: 22, fontWeight: '700', color: '#CCC' },
-  cardContent: { padding: 10 },
-  productName: { fontSize: 14, fontWeight: '600', color: '#222' },
-  row: { marginTop: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  price: { fontSize: 14, fontWeight: '700', color: COLORS.primary },
-  badge: { backgroundColor: COLORS.primary_two, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
-  badgeText: { color: '#fff', fontSize: 12, fontWeight: '700' },
 
   empty: { padding: 40, alignItems: 'center' },
   loadingWrap: { flex: 1, justifyContent: 'center', alignItems: 'center' },
