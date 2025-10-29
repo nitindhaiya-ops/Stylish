@@ -44,6 +44,9 @@ const CARD_WIDTH = (width - CARD_MARGIN * 3) / 2;
 const profileIcon = require('../assets/img/profileIcon.png');
 const bannerOne = require('../assets/img/banner1.png');
 const specialOfferBanner = require('../assets/img/specialOffer.png');
+const visitNOwleftImg = require('../assets/img/visitNOwleftImg.png');
+const visitNOwMiddleImg = require('../assets/img/visitNOwMiddleImg.png');
+const visitNOwRightImg = require('../assets/img/visitNOwRightImg.png');
 
 type Product = {
   id: string;
@@ -181,6 +184,59 @@ const CountdownTimer: React.FC = () => {
         <Text style={[styles.white, styles.timeText]}>{format(timeLeft.seconds)}s</Text>
         <Text style={[styles.white, styles.timeText]}>remaining</Text>
       </View>
+    </View>
+  );
+};
+
+/* -------------------------------------------------
+   DailyDeadline – Dynamic "Last Date" + Countdown
+   ------------------------------------------------- */
+const DailyDeadline: React.FC = () => {
+  const [timeLeft, setTimeLeft] = useState({ h: 0, m: 0, s: 0 });
+
+  useEffect(() => {
+    const update = () => {
+      const now = new Date();
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+      const diff = end.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        setTimeout(update, 100);
+        return;
+      }
+
+      const h = Math.floor(diff / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTimeLeft({ h, m, s });
+    };
+
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2, '0');
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const yy = String(today.getFullYear()).slice(-2);
+  const dateStr = `${dd}/${mm}/${yy}`;
+
+  const fmt = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+
+  return (
+    <View style={styles.trendingDeadlineContainer}>
+      <Svg width="12" height="14" viewBox="0 0 12 14" fill="none">
+        <Path
+          d="M2.66667 6H4V7.33333H2.66667V6ZM12 2.66667V12C12 12.7333 11.4 13.3333 10.6667 13.3333H1.33333C0.593333 13.3333 0 12.7333 0 12L0.00666666 2.66667C0.00666666 1.93333 0.593333 1.33333 1.33333 1.33333H2V0H3.33333V1.33333H8.66667V0H10V1.33333H10.6667C11.4 1.33333 12 1.93333 12 2.66667ZM1.33333 4H10.6667V2.66667H1.33333V4ZM10.6667 12V5.33333H1.33333V12H10.6667ZM8 7.33333H9.33333V6H8V7.33333ZM5.33333 7.33333H6.66667V6H5.33333V7.33333Z"
+          fill="white"
+        />
+      </Svg>
+      <Text style={styles.trendingDeadlineText}>
+        Last Date {dateStr} 
+        {/* – {fmt(timeLeft.h)}h {fmt(timeLeft.m)}m {fmt(timeLeft.s)}s */}
+      </Text>
     </View>
   );
 };
@@ -507,10 +563,57 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.specialOfferWrap}>
         <Image source={specialOfferBanner} style={styles.specialOfferBanner} />
         <View style={styles.specialOfferTextContainer}>
-          <Text style={[styles.white, styles.specialOfferTitle]}>Special Offer</Text>
-          <Text style={[styles.white, styles.specialOfferDesc]}>
-            Up to 70% off on selected styles. Hurry up! Limited time offer.
+          <Text style={styles.specialOfferTitle}>Special Offers</Text>
+          <Text style={styles.specialOfferDesc}>
+            We make sure you get the offer you need at best prices
           </Text>
+        </View>
+      </View>
+
+      {/* ==================== VISIT NOW ==================== */}
+      <View style={styles.visitNOwWrap}>
+        <View style={styles.imgContainer}>
+          <Image source={visitNOwleftImg} style={styles.visitNOwleftImg} />
+          <Image source={visitNOwMiddleImg} style={styles.visitNOwMiddleImg} />
+          <Image source={visitNOwRightImg} style={styles.visitNOwRightImg} resizeMode='contain' />
+        </View>
+        <View style={styles.textContainer}>
+          <Text style={styles.textTitle}>Flat and Heels</Text>
+          <Text style={styles.subTitle}>Stand a chance to get rewarded</Text>
+          <View style={styles.visitNOwBtnWrap}>
+            <Text style={styles.visitNOwBtn}>Visit now</Text>
+            <Svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <G clip-path="url(#clip0_135_7043)">
+                <Path d="M9.99998 3.33337L9.05998 4.27337L12.1133 7.33337H1.33331V8.66671H12.1133L9.05331 11.7267L9.99998 12.6667L14.6666 8.00004L9.99998 3.33337Z" fill="white" />
+              </G>
+              <Defs>
+                <ClipPath id="clip0_135_7043">
+                  <Rect width="16" height="16" fill="white" />
+                </ClipPath>
+              </Defs>
+            </Svg>
+          </View>
+        </View>
+      </View>
+
+      {/* ==================== TRENDING PRODUCTS ==================== */}
+      <View style={styles.trendingWrap}>
+        <View style={styles.dealTimer}>
+          <Text style={[styles.white, styles.dealText]}>Trending Products</Text>
+          <DailyDeadline />
+        </View>
+        <View style={styles.shopNowRow}>
+          <Text style={[styles.white, styles.viewAllText]}>View All</Text>
+          <Svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <G clipPath="url(#clip0_135_7285)">
+              <Path d="M10 3.33337L9.06001 4.27337L12.1133 7.33337H1.33334V8.66671H12.1133L9.05334 11.7267L10 12.6667L14.6667 8.00004L10 3.33337Z" fill="white" />
+            </G>
+            <Defs>
+              <ClipPath id="clip0_135_7285">
+                <Rect width="16" height="16" fill="white" />
+              </ClipPath>
+            </Defs>
+          </Svg>
         </View>
       </View>
     </>
@@ -618,7 +721,7 @@ const styles = StyleSheet.create({
   dealTimer: { alignItems: 'flex-start' },
   viewAllText: { fontSize: 16, fontWeight: '600' },
   timerRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
-  dealText: { fontSize: 20, fontWeight: '700' },
+  dealText: { fontSize: 20, fontWeight: '500' },
   timeBox: { flexDirection: 'row', gap: 4, alignItems: 'center' },
   timeText: { fontSize: 18, fontWeight: '700', minWidth: 32, textAlign: 'center' },
   dealSliderContainer: { marginTop: 16, position: 'relative' },
@@ -640,11 +743,33 @@ const styles = StyleSheet.create({
   menuItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 8, borderRadius: 12, marginBottom: 4 },
   menuIcon: { marginRight: 16 },
   menuItemText: { fontSize: 16, color: '#333', fontWeight: '500' },
-  specialOfferBanner: { width: '100%', height: 150, borderRadius: 12 },
-  specialOfferWrap: { marginTop: 24, paddingHorizontal: 16, position: 'relative' },
-  specialOfferTextContainer: { position: 'absolute', top: 30, left: 24, right: 24 },
+  specialOfferWrap: { marginVertical: 24, padding: 16, position: 'relative', borderRadius: 12, flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.white, gap: 16 },
+  specialOfferBanner: { width: 60, height: 60, },
+  specialOfferTextContainer: { flex: 1 },
   specialOfferTitle: { fontSize: 22, fontWeight: '700', marginBottom: 8 },
   specialOfferDesc: { fontSize: 16, fontWeight: '300' },
+  visitNOwWrap: { marginBottom: 32, backgroundColor: COLORS.white, borderRadius: 12, marginTop: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 16 },
+  imgContainer: { flexDirection: 'row', marginBottom: 12 },
+  visitNOwleftImg: { width: 10, height: 170, },
+  visitNOwMiddleImg: { width: 77, marginLeft: -5, height: 170 },
+  visitNOwRightImg: { width: 144, marginLeft: -50, height: 170 },
+  textContainer: { alignItems: 'center', gap: 4 },
+  textTitle: { fontSize: 20, fontWeight: '500' },
+  subTitle: { fontSize: 14, fontWeight: '300', color: COLORS.black },
+  visitNOwBtnWrap: { marginLeft: 80, flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.primary, marginTop: 8, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, gap: 6 },
+  visitNOwBtn: { color: COLORS.white },
+  trendingWrap: { padding: 16, backgroundColor: COLORS.primary_two, borderRadius: 12, flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: 16, marginBottom: 32, },
+  trendingDeadlineContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    gap: 6,
+  },
+  trendingDeadlineText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '500',
+  },
 });
 
 export default HomeScreen;
