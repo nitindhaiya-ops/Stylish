@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Easing } from 'react-native';
 import {
   View,
@@ -37,6 +37,7 @@ const CARD_MARGIN = 12;
 const CARD_WIDTH = (width - CARD_MARGIN * 3) / 2;
 
 const profileIcon = require('../assets/img/profileIcon.png');
+const bannerOne = require('../assets/img/banner1.png');
 
 type Product = {
   id: string;
@@ -65,6 +66,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [loading] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   const menuAnim = useRef(new Animated.Value(-300)).current;
 
@@ -100,6 +102,13 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     }).start();
   };
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev === 2 ? 0 : prev + 1));
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -137,7 +146,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
         <View style={styles.Logoflex}>
           <Svg width="38" height="38" viewBox="0 0 125 100" fill="none" accessibilityLabel="Stylish logo">
-            {/* ... logo paths ... */}
             <Path
               d="M124.993 49.9986C124.993 36.7382 119.725 24.0208 110.349 14.6442C100.972 5.2677 88.255 1.7389e-06 74.9947 0C61.7343 -1.73889e-06 49.017 5.2677 39.6404 14.6442C30.2638 24.0208 24.9961 36.7382 24.9961 49.9986H40.6209C45.7984 49.9986 49.8363 45.6597 51.7328 40.8418C52.9778 37.6787 54.8672 34.7718 57.3174 32.3213C62.0057 27.6331 68.3645 24.9993 74.9947 24.9993C81.6249 24.9993 87.9837 27.6331 92.6719 32.3213C97.3602 37.0096 99.9938 43.3684 99.9938 49.9986H124.993Z"
               fill="url(#paint0)"
@@ -289,6 +297,104 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           }}
         />
       </View>
+
+      {/* Promo Banner Carousel */}
+      <View style={styles.promoWrap}>
+        <FlatList
+          data={[bannerOne, bannerOne, bannerOne]} // 3 banners (you can add bannerTwo, bannerThree later)
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.promoContainer}>
+              <Image source={item} style={styles.promo} />
+              <View style={styles.bannerTextContainer}>
+                <Text style={[styles.white, styles.offText]}>50-40% OFF</Text>
+                <View style={{ marginBottom: 8 }}>
+                  <Text style={[styles.white, styles.lightOffText]}>Now in (product)</Text>
+                  <Text style={[styles.white, styles.lightOffText]}>All colours</Text>
+                </View>
+                <View style={styles.shopNowRow}>
+                  <Text style={styles.white}>Shop Now </Text>
+                  <Svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <G clipPath="url(#clip0_135_7285)">
+                      <Path
+                        d="M10 3.33337L9.06001 4.27337L12.1133 7.33337H1.33334V8.66671H12.1133L9.05334 11.7267L10 12.6667L14.6667 8.00004L10 3.33337Z"
+                        fill="white"
+                      />
+                    </G>
+                    <Defs>
+                      <ClipPath id="clip0_135_7285">
+                        <Rect width="16" height="16" fill="white" />
+                      </ClipPath>
+                    </Defs>
+                  </Svg>
+                </View>
+              </View>
+            </View>
+          )}
+          onMomentumScrollEnd={(e) => {
+            const slide = Math.round(e.nativeEvent.contentOffset.x / width);
+            setCurrentSlide(slide);
+          }}
+        />
+
+        {/* Dots Indicator */}
+        <View style={styles.dotsContainer}>
+          {[0, 1, 2].map((index) => (
+            <View
+              key={index}
+              style={[
+                styles.dot,
+                currentSlide === index ? styles.dotActive : styles.dotInactive,
+              ]}
+            />
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.dealofthedayWrap}>
+        <View style={styles.dealTimer}>
+          <Text style={[styles.white, styles.dealText]}>Deal of the Day</Text>
+          <View style={styles.timerRow}>
+            <View style={styles.timeBox}>
+              <Svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <G clip-path="url(#clip0_135_11)">
+                  <Path d="M14.6667 3.79995L11.6 1.19995L10.7333 2.19995L13.8 4.79995L14.6667 3.79995ZM5.26668 2.26662L4.40001 1.26662L1.33334 3.79995L2.20001 4.79995L5.26668 2.26662ZM8.33334 5.33328H7.33334V9.33328L10.4667 11.2666L11 10.4666L8.33334 8.86662V5.33328ZM8.00001 2.66662C4.66668 2.66662 2.00001 5.33328 2.00001 8.66662C2.00001 12 4.66668 14.6666 8.00001 14.6666C11.3333 14.6666 14 12 14 8.66662C14 5.33328 11.3333 2.66662 8.00001 2.66662ZM8.00001 13.3333C5.40001 13.3333 3.33334 11.2666 3.33334 8.66662C3.33334 6.06662 5.40001 3.99995 8.00001 3.99995C10.6 3.99995 12.6667 6.06662 12.6667 8.66662C12.6667 11.2666 10.6 13.3333 8.00001 13.3333Z" fill="white" />
+                </G>
+                <Defs>
+                  <ClipPath id="clip0_135_11">
+                    <Rect width="16" height="16" fill="white" />
+                  </ClipPath>
+                </Defs>
+              </Svg>
+              <Text style={[styles.white, styles.timeText]}>12h</Text>
+              <Text style={[styles.white, styles.timeText]}>08m</Text>
+              <Text style={[styles.white, styles.timeText]}>34s</Text>
+              <Text style={[styles.white, styles.timeText]}>remaining</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.shopNowRow}>
+          <Text style={[styles.white, styles.viewAllText]}>View All</Text>
+          <Svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <G clipPath="url(#clip0_135_7285)">
+              <Path
+                d="M10 3.33337L9.06001 4.27337L12.1133 7.33337H1.33334V8.66671H12.1133L9.05334 11.7267L10 12.6667L14.6667 8.00004L10 3.33337Z"
+                fill="white"
+              />
+            </G>
+            <Defs>
+              <ClipPath id="clip0_135_7285">
+                <Rect width="16" height="16" fill="white" />
+              </ClipPath>
+            </Defs>
+          </Svg>
+        </View>
+      </View>
+
       {/* Product Grid */}
       {loading ? (
         <View style={styles.loadingWrap}>
@@ -557,6 +663,52 @@ const styles = StyleSheet.create({
     height: 56,
     marginBottom: 4,
   },
+  white: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
+  promoWrap: { marginTop: 16, paddingHorizontal: 16, position: 'relative' },
+  promoContainer: { width, overflow: 'hidden', borderRadius: 12 },
+  promo: { width: '100%', height: 190, borderRadius: 12 },
+  bannerTextContainer: { position: 'absolute', top: 40, left: 15 },
+  offText: { fontSize: 24, fontWeight: '700', marginBottom: 8 },
+  lightOffText: { fontSize: 18, fontWeight: '300' },
+  shopNowRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    // width: 110,
+    paddingInline: 10,
+    paddingBlock: 6,
+    justifyContent: 'space-between',
+    display: 'flex',
+  },
+  dotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 12,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 4,
+  },
+  dotActive: {
+    backgroundColor: '#ff9aac',
+  },
+  dotInactive: {
+    backgroundColor: COLORS.text,
+  },
+  dealofthedayWrap: { padding: 16, backgroundColor: COLORS.blue, flexDirection: 'row', justifyContent: 'space-between', marginTop: 24, borderRadius: 12, marginHorizontal: 16, alignItems: 'center' },
+  dealTimer: { alignItems: 'flex-start' },
+  viewAllText: { fontSize: 16, fontWeight: '600' },
+  timerRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
+  dealText: { fontSize: 20, fontWeight: '700' },
+  timeBox: { alignItems: 'center', marginHorizontal: 4, flexDirection: 'row', gap: 4 },
+  timeText: { fontSize: 18, fontWeight: '700' },
 });
 
 export default HomeScreen;
