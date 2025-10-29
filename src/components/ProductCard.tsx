@@ -14,7 +14,11 @@ type ProductCardProps = {
   title: string;
   price: string;
   image: ImageSourcePropType;
+  originalPrice?: string;
+  discount?: string;
   onPress?: () => void;
+  rating?: number;
+  totalRatings?: string;
 };
 
 const ActiveStarSvg = `
@@ -36,7 +40,16 @@ const DeactiveStarSvg = `
 </svg>
 `;
 
-const ProductCard: React.FC<ProductCardProps> = ({ title, price, image, onPress }) => {
+const ProductCard: React.FC<ProductCardProps> = ({
+  title,
+  price,
+  image,
+  originalPrice,
+  discount,
+  onPress,
+  rating,
+  totalRatings,
+}) => {
   return (
     <TouchableOpacity activeOpacity={0.8} onPress={onPress} style={styles.card}>
       <ImageBackground
@@ -48,36 +61,43 @@ const ProductCard: React.FC<ProductCardProps> = ({ title, price, image, onPress 
 
       {/* Product Info */}
       <View style={styles.textContainer}>
-        <Text
-          style={styles.title}
-          numberOfLines={1}
-          ellipsizeMode="tail"
-        >
+        <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
           {title}
         </Text>
 
-        <Text
-          style={styles.subtitle}
-          numberOfLines={2}
-          ellipsizeMode="tail"
-        >
+        <Text style={styles.subtitle} numberOfLines={2} ellipsizeMode="tail">
           {title}
         </Text>
 
-        <Text style={styles.price}>{price}</Text>
+        {/* Price Section - Conditional */}
+        {originalPrice && discount ? (
+          <View style={styles.priceRow}>
+            <Text style={styles.price}>{price}</Text>
+            <View style={styles.discountRow}>
+              <Text style={styles.lineThrough}>{originalPrice}</Text>
+              <Text style={styles.offPercent}>{discount}</Text>
+            </View>
+          </View>
+        ) : (
+          <Text style={styles.price}>{price}</Text>
+        )}
 
+        {/* Star Rating */}
         <View style={styles.starWrapper}>
-          {[...Array(4)].map((_, index) => (
-            <SvgXml key={index} xml={ActiveStarSvg} />
+          {[...Array(5)].map((_, i) => (
+            <SvgXml
+              key={i}
+              xml={i < Math.floor(rating || 0) ? ActiveStarSvg : DeactiveStarSvg}
+            />
           ))}
-          <SvgXml xml={DeactiveStarSvg} />
+          {totalRatings && <Text style={styles.ratingCount}>{totalRatings}</Text>}
         </View>
       </View>
     </TouchableOpacity>
   );
 };
 
-// 💅 Styles
+// Styles
 const styles = StyleSheet.create({
   card: {
     width: 180,
@@ -104,8 +124,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.black,
     width: '80%',
-},
-subtitle: {
+  },
+  subtitle: {
     fontSize: 13,
     color: '#666',
     marginTop: 2,
@@ -115,13 +135,35 @@ subtitle: {
   price: {
     fontSize: 14,
     fontWeight: '500',
-    color: COLORS.primary,
     marginVertical: 4,
+  },
+  priceRow: {
+  },
+  discountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  lineThrough: {
+    textDecorationLine: 'line-through',
+    color: '#888',
+    fontSize: 12,
+  },
+  offPercent: {
+    color: COLORS.primary,
+    fontSize: 12,
+    fontWeight: '600',
   },
   starWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
+    marginTop: 4,
+  },
+  ratingCount: {
+    fontSize: 12,
+    color: COLORS.text,
+    marginLeft: 4,
   },
 });
 
