@@ -47,6 +47,7 @@ const specialOfferBanner = require('../assets/img/specialOffer.png');
 const visitNOwleftImg = require('../assets/img/visitNOwleftImg.png');
 const visitNOwMiddleImg = require('../assets/img/visitNOwMiddleImg.png');
 const visitNOwRightImg = require('../assets/img/visitNOwRightImg.png');
+const summerSale = require('../assets/img/summerSale.png');
 
 type Product = {
   id: string;
@@ -616,6 +617,92 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           </Svg>
         </View>
       </View>
+
+      {/* ==================== 2.5-COLUMN TRENDING SLIDER ==================== */}
+      <View style={styles.trendingSliderContainer}>
+        <FlatList
+          data={filtered}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          snapToInterval={CARD_WIDTH * 2 + CARD_MARGIN}
+          decelerationRate="fast"
+          keyExtractor={item => item.id}
+          renderItem={({ item, index }) => {
+            if (index % 2 !== 0) return null;
+            const next = filtered[index + 1];
+            const nextNext = filtered[index + 2];
+            return (
+              <View style={styles.trendingPair}>
+                <View style={styles.trendingCard}>
+                  <ProductCard
+                    title={item.name}
+                    price={`₹${item.price}`}
+                    originalPrice={item.originalPrice}
+                    discount={item.discount}
+                    rating={item.rating}
+                    totalRatings={item.totalRatings}
+                    image={item.image}
+                    onPress={() => console.log('Pressed:', item.name)}
+                  />
+                </View>
+                {next && (
+                  <View style={styles.trendingCard}>
+                    <ProductCard
+                      title={next.name}
+                      price={`₹${next.price}`}
+                      originalPrice={next.originalPrice}
+                      discount={next.discount}
+                      rating={next.rating}
+                      totalRatings={next.totalRatings}
+                      image={next.image}
+                      onPress={() => console.log('Pressed:', next.name)}
+                    />
+                  </View>
+                )}
+                {nextNext && (
+                  <View style={styles.trendingHalfCard}>
+                    <ProductCard
+                      title={nextNext.name}
+                      price={`₹${nextNext.price}`}
+                      originalPrice={nextNext.originalPrice}
+                      discount={nextNext.discount}
+                      rating={nextNext.rating}
+                      totalRatings={nextNext.totalRatings}
+                      image={nextNext.image}
+                      onPress={() => console.log('Pressed:', nextNext.name)}
+                    />
+                  </View>
+                )}
+              </View>
+            );
+          }}
+          ListHeaderComponent={() => <View style={{ width: 16 }} />}
+          ListFooterComponent={() => <View style={{ width: 16 }} />}
+        />
+        <TouchableOpacity
+          style={styles.trendingRightArrow}
+          onPress={() => {
+            const maxPairs = Math.floor((filtered.length - 1) / 2);
+            const nextPair = currentSlide >= maxPairs ? 0 : currentSlide + 1;
+            flatListRef.current?.scrollToIndex({
+              index: nextPair * 2,
+              animated: true,
+              viewPosition: 0,
+            });
+            setCurrentSlide(nextPair);
+          }}
+        >
+          <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <Path
+              d="M9 6L15 12L9 18"
+              stroke={COLORS.primary}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </Svg>
+        </TouchableOpacity>
+      </View>
     </>
   );
 
@@ -769,6 +856,34 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 13,
     fontWeight: '500',
+  },
+  // New styles for 2.5-column trending slider
+  trendingSliderContainer: { marginTop: 16, marginHorizontal: 16, position: 'relative' },
+  trendingPair: {
+    flexDirection: 'row',
+    width: CARD_WIDTH * 2.5 + CARD_MARGIN * 2,
+    paddingHorizontal: CARD_MARGIN,
+    alignItems: 'flex-start',
+  },
+  trendingCard: { width: CARD_WIDTH, marginRight: CARD_MARGIN },
+  trendingHalfCard: {
+    width: CARD_WIDTH / 2,
+    marginLeft: CARD_MARGIN / 2,
+    opacity: 0.6,
+  },
+  trendingRightArrow: {
+    position: 'absolute',
+    right: 8,
+    top: '50%',
+    marginTop: -12,
+    backgroundColor: '#fff',
+    padding: 8,
+    borderRadius: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
 });
 
