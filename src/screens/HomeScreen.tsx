@@ -48,6 +48,7 @@ const visitNOwleftImg = require('../assets/img/visitNOwleftImg.png');
 const visitNOwMiddleImg = require('../assets/img/visitNOwMiddleImg.png');
 const visitNOwRightImg = require('../assets/img/visitNOwRightImg.png');
 const summerSalesBanner = require('../assets/img/summerSale.png');
+const sponserdBanner = require('../assets/img/sponserdBanner.png');
 
 type Product = {
   id: string;
@@ -705,21 +706,43 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
       </View>
 
       {/* ==================== SUMMER SALES ==================== */}
-      <View>
-        <Image source={summerSalesBanner} style={styles.summerSalesBanner} />
-        <View>
-          <Text style={styles.summerSalesTitle}>Summer Sales</Text>
-          <Text style={styles.summerSalesDesc}>Get up to 70% off on summer collections</Text>
+      <View style={styles.summerSalesWrap}>
+        <Image source={summerSalesBanner} resizeMode='contain' style={styles.summerSalesBanner} />
+        <View style={styles.summerSalesTextContainer}>
+          <View>
+            <Text style={styles.summerSalesTitle}>Summer Sales</Text>
+            <Text style={styles.summerSalesDesc}>Summer’ 25 Collections</Text>
+          </View>
+          <View style={styles.summerSalesBtnWrap}>
+            <Text style={styles.summerSalesBtn}>Shop Now</Text>
+            <Svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <G clip-path="url(#clip0_161_7358)">
+                <Path d="M9.99998 3.33325L9.05998 4.27325L12.1133 7.33325H1.33331V8.66659H12.1133L9.05331 11.7266L9.99998 12.6666L14.6666 7.99992L9.99998 3.33325Z" fill="white" />
+              </G>
+              <Defs>
+                <ClipPath id="clip0_161_7358">
+                  <Rect width="16" height="16" fill="white" />
+                </ClipPath>
+              </Defs>
+            </Svg>
+          </View>
         </View>
-        <View style={styles.summerSalesBtnWrap}>
-          <Text style={styles.summerSalesBtn}>Shop Now</Text>
-          <Svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <G clip-path="url(#clip0_161_7358)">
-              <Path d="M9.99998 3.33325L9.05998 4.27325L12.1133 7.33325H1.33331V8.66659H12.1133L9.05331 11.7266L9.99998 12.6666L14.6666 7.99992L9.99998 3.33325Z" fill="white" />
+      </View>
+
+      {/* ==================== SUMMER SALES ==================== */}
+
+      <View style={styles.sponserdWrap}>
+        <Text>Sponserd</Text>
+        <Image source={sponserdBanner} style={styles.sponserdBanner} resizeMode="contain" />
+        <View style={styles.sponserdOffer}>
+          <Text>up to 50% Off</Text>
+          <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <G clip-path="url(#clip0_1_17092)">
+              <Path d="M8.35011 5L7.17511 6.175L10.9918 10L7.17511 13.825L8.35011 15L13.3501 10L8.35011 5Z" fill="#323232" />
             </G>
             <Defs>
-              <ClipPath id="clip0_161_7358">
-                <Rect width="16" height="16" fill="white" />
+              <ClipPath id="clip0_1_17092">
+                <Rect width="20" height="20" fill="white" />
               </ClipPath>
             </Defs>
           </Svg>
@@ -907,9 +930,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  summerSalesBtnWrap: {
-backgroundColor: COLORS.primary,
-  }
+  summerSalesWrap: { marginBottom: 32, padding: 16, position: 'relative', borderRadius: 12, backgroundColor: COLORS.white },
+  summerSalesTextContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 12 },
+  summerSalesBanner: { width: '100%', height: 250, borderRadius: 12, marginTop: 16 },
+  summerSalesTitle: { fontSize: 22, fontWeight: '700', marginTop: 12 },
+  summerSalesDesc: { fontSize: 16, fontWeight: '300', marginTop: 4 },
+  summerSalesBtnWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.primary, marginTop: 12, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, width: 100, justifyContent: 'center', gap: 6 },
+  summerSalesBtn: { color: COLORS.white },
+  sponserdWrap: { marginBottom: 32, backgroundColor: COLORS.white},
+  sponserdBanner: { width: '100%', height: 355  },
+  sponserdOffer : { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 12  },
 });
 
 export default HomeScreen;
