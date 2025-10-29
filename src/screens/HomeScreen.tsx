@@ -47,7 +47,7 @@ const specialOfferBanner = require('../assets/img/specialOffer.png');
 const visitNOwleftImg = require('../assets/img/visitNOwleftImg.png');
 const visitNOwMiddleImg = require('../assets/img/visitNOwMiddleImg.png');
 const visitNOwRightImg = require('../assets/img/visitNOwRightImg.png');
-const summerSale = require('../assets/img/summerSale.png');
+const summerSalesBanner = require('../assets/img/summerSale.png');
 
 type Product = {
   id: string;
@@ -235,7 +235,7 @@ const DailyDeadline: React.FC = () => {
         />
       </Svg>
       <Text style={styles.trendingDeadlineText}>
-        Last Date {dateStr} 
+        Last Date {dateStr}
         {/* – {fmt(timeLeft.h)}h {fmt(timeLeft.m)}m {fmt(timeLeft.s)}s */}
       </Text>
     </View>
@@ -703,6 +703,28 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           </Svg>
         </TouchableOpacity>
       </View>
+
+      {/* ==================== SUMMER SALES ==================== */}
+      <View>
+        <Image source={summerSalesBanner} style={styles.summerSalesBanner} />
+        <View>
+          <Text style={styles.summerSalesTitle}>Summer Sales</Text>
+          <Text style={styles.summerSalesDesc}>Get up to 70% off on summer collections</Text>
+        </View>
+        <View style={styles.summerSalesBtnWrap}>
+          <Text style={styles.summerSalesBtn}>Shop Now</Text>
+          <Svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <G clip-path="url(#clip0_161_7358)">
+              <Path d="M9.99998 3.33325L9.05998 4.27325L12.1133 7.33325H1.33331V8.66659H12.1133L9.05331 11.7266L9.99998 12.6666L14.6666 7.99992L9.99998 3.33325Z" fill="white" />
+            </G>
+            <Defs>
+              <ClipPath id="clip0_161_7358">
+                <Rect width="16" height="16" fill="white" />
+              </ClipPath>
+            </Defs>
+          </Svg>
+        </View>
+      </View>
     </>
   );
 
@@ -885,6 +907,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
+  summerSalesBtnWrap: {
+backgroundColor: COLORS.primary,
+  }
 });
 
 export default HomeScreen;
