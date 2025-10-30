@@ -75,13 +75,16 @@ const SplashScreen: React.FC<Props> = ({ navigation }) => {
 
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
-  const handleSkip = () => navigation.replace('SignIn');
+  const handleSkip = () => navigation.replace('MainTabs');
   const handlePrev = () => {
     if (index > 1) flatRef.current?.scrollToIndex({ index: index - 1, animated: true });
   };
   const handleNext = () => {
-    if (index < slides.length - 1) flatRef.current?.scrollToIndex({ index: index + 1, animated: true });
-    else navigation.replace('SignIn');
+    if (index < slides.length - 1) {
+      flatRef.current?.scrollToIndex({ index: index + 1, animated: true });
+    } else {
+      navigation.replace('MainTabs');  
+    }
   };
 
   return (

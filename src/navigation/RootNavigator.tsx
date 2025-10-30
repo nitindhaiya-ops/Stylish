@@ -1,21 +1,22 @@
-// src/navigation/RootNavigator.tsx
+/*  src/navigation/RootNavigator.tsx  */
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 import SplashScreen from '../screens/SplashScreen';
 import SignIn from '../screens/SignIn';
 import SignUp from '../screens/SignUp';
 import ForgotPassword from '../screens/ForgotPassword';
-import HomeScreen from '../screens/HomeScreen'; // later
 import getStartedScreen from '../screens/getStartedScreen';
+import TabNavigator from './TabNavigator';
 
 export type RootStackParamList = {
   Splash: undefined;
   SignIn: undefined;
   SignUp: undefined;
   ForgotPassword: undefined;
-  Home: undefined;
   getStarted: undefined;
+  MainTabs: undefined;   // <-- the whole bottom-tab UI
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -29,7 +30,9 @@ export default function RootNavigator() {
         <Stack.Screen name="getStarted" component={getStartedScreen} />
         <Stack.Screen name="SignUp" component={SignUp} />
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
-        <Stack.Screen name="Home" component={HomeScreen} />
+
+        {/* THIS IS THE ONLY SCREEN THAT SHOWS THE BOTTOM TABS */}
+        <Stack.Screen name="MainTabs" component={TabNavigator} />
       </Stack.Navigator>
     </NavigationContainer>
   );
