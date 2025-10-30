@@ -164,7 +164,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     : styles.image;
 
   return (
-    <View style={{ flex: 1 , flexDirection: 'column' }}>
+    <View style={styles.cardContainer}>
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onPress}
@@ -222,8 +222,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
 };
 
 const styles = StyleSheet.create({
+  cardContainer: {
+    marginBottom: 12,
+    flexDirection: 'row',
+  },
   card: {
-    borderRadius: 1556,
+    borderRadius: 16,
     overflow: 'hidden',
     backgroundColor: '#fff',
     margin: 6,
