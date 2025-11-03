@@ -9,6 +9,8 @@ import WishlistScreen from '../screens/WishlistScreen';
 import CartScreen from '../screens/CartScreen';
 import SearchScreen from '../screens/SearchScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import ProductScreen from '../screens/ProductScreen';
 
 /* -------------------------------------------------
    SVG strings – INACTIVE / ACTIVE
@@ -79,6 +81,18 @@ const settingsActive = `<svg xmlns="http://www.w3.org/2000/svg" width="24" heigh
 
 const Tab = createBottomTabNavigator();
 
+const SearchStack = createNativeStackNavigator();   // <-- NEW
+
+/* ---------- SEARCH STACK (Search + Product detail) ---------- */
+function SearchStackNavigator() {
+  return (
+    <SearchStack.Navigator screenOptions={{ headerShown: false }}>
+      <SearchStack.Screen name="SearchHome" component={SearchScreen} />
+      <SearchStack.Screen name="ProductDetail" component={ProductScreen} />
+    </SearchStack.Navigator>
+  );
+}
+
 export default function TabNavigator() {
   return (
     <Tab.Navigator
@@ -142,7 +156,7 @@ export default function TabNavigator() {
       {/* ---------- SEARCH ---------- */}
       <Tab.Screen
         name="SearchTab"
-        component={SearchScreen}
+        component={SearchStackNavigator}
         options={{
           tabBarLabel: 'Search',
           tabBarIcon: ({ focused }) => (

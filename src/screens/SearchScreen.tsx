@@ -24,6 +24,7 @@ import Svg, {
 } from 'react-native-svg';
 import { SvgXml } from 'react-native-svg';
 import { COLORS } from '../constants/colors';
+import { useNavigation } from '@react-navigation/native';
 
 // ────────────────────── ASSETS ──────────────────────
 const profileIcon = require('../assets/img/profileIcon.png');
@@ -106,8 +107,10 @@ const { width } = Dimensions.get('window');
 const CARD_MARGIN = 12;
 const NORMAL_WIDTH = (width - CARD_MARGIN * 3) / 2;           // 2-column base
 const LARGE_WIDTH = (width - CARD_MARGIN * 3) / 2;
-const NORMAL_HEIGHT = 240;
-const LARGE_HEIGHT = NORMAL_HEIGHT * 1.5;
+// const NORMAL_HEIGHT = 240;
+const NORMAL_HEIGHT = 240 * 1.5;
+// const LARGE_HEIGHT = NORMAL_HEIGHT * 1.5;
+const LARGE_HEIGHT = NORMAL_HEIGHT;
 
 // ────────────────────── SVG STARS ──────────────────────
 const ActiveStarSvg = `
@@ -164,7 +167,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
     : styles.image;
 
   return (
-    <View style={styles.cardContainer}>
+    <View style={styles.cardContainer} >
+      {/* here on click on navigate to another screen */}
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onPress}
@@ -320,6 +324,7 @@ const pairProducts = (list: Product[]) => {
 // ────────────────────── SEARCH SCREEN ──────────────────────
 export default function SearchScreen() {
   const [query, setQuery] = useState('');
+  const navigation = useNavigation<any>();
 
   const filteredProducts = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -494,7 +499,10 @@ export default function SearchScreen() {
                 totalRatings={left.totalRatings}
                 badge={left.badge}
                 isLarge={!isOddRow}
-                onPress={() => console.log('Pressed:', left.name)}
+                onPress={() => {
+    // NEW: navigate to the detail screen inside the same stack
+    navigation.navigate('ProductDetail', { product: left });
+  }}
               />
               {right && (
                 <ProductCard
@@ -507,8 +515,7 @@ export default function SearchScreen() {
                   totalRatings={right.totalRatings}
                   badge={right.badge}
                   isLarge={isOddRow}
-                  onPress={() => console.log('Pressed:', right.name)}
-                />
+onPress={() => navigation.navigate('ProductDetail', { product: right })}                />
               )}
             </View>
           );
