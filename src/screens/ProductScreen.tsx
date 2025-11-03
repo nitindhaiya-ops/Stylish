@@ -212,7 +212,7 @@ export default function ProductScreen() {
   const navigation = useNavigation<any>();
   const openProductDetail = (p: Product) =>
     navigation.push('ProductDetail', { product: p });
-  
+
   if (!product) {
     return (
       <View style={styles.center}>
@@ -307,11 +307,19 @@ export default function ProductScreen() {
 
           {/* ---- Buy / Add to Cart Buttons ---- */}
           <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.addBtn} activeOpacity={0.85}>
+            <TouchableOpacity
+              style={styles.addBtn}
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate('CartTab')} 
+            >
               <Text style={styles.addBtnText}>Add to Cart</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.buyBtn} activeOpacity={0.85}>
+            <TouchableOpacity
+              style={styles.buyBtn}
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate('Checkout')}
+            >
               <Text style={styles.buyBtnText}>Buy Now</Text>
             </TouchableOpacity>
           </View>
@@ -463,7 +471,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
-    // ───── View Similar / Compare Buttons ─────
+  // ───── View Similar / Compare Buttons ─────
   viewBtn: {
     flex: 1,
     flexDirection: 'row',

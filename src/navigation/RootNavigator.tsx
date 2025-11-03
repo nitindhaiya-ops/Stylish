@@ -9,6 +9,8 @@ import SignUp from '../screens/SignUp';
 import ForgotPassword from '../screens/ForgotPassword';
 import getStartedScreen from '../screens/getStartedScreen';
 import TabNavigator from './TabNavigator';
+import CheckoutScreen from '../screens/CheckoutScreen';
+import PaymentScreen from '../screens/PaymentScreen';
 
 export type RootStackParamList = {
   Splash: undefined;
@@ -16,7 +18,9 @@ export type RootStackParamList = {
   SignUp: undefined;
   ForgotPassword: undefined;
   getStarted: undefined;
-  MainTabs: undefined;   // <-- the whole bottom-tab UI
+  MainTabs: undefined; 
+  Checkout: undefined; 
+  Payment: undefined; 
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -29,6 +33,8 @@ export default function RootNavigator() {
         <Stack.Screen name="SignIn" component={SignIn} />
         <Stack.Screen name="getStarted" component={getStartedScreen} />
         <Stack.Screen name="SignUp" component={SignUp} />
+        <Stack.Screen name="Checkout" component={CheckoutScreen} />
+        <Stack.Screen name="Payment" component={PaymentScreen} />
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
 
         {/* THIS IS THE ONLY SCREEN THAT SHOWS THE BOTTOM TABS */}
