@@ -95,6 +95,102 @@ const CompareSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
   </defs>
 </svg>`;
 
+
+// ────────────────────── DUMMY SIMILAR PRODUCTS ──────────────────────
+const SIMILAR_PRODUCTS: Product[] = [
+  {
+    id: 's1',
+    name: 'Slim Fit Shirt',
+    price: 1299,
+    originalPrice: '₹1799',
+    discount: '28% OFF',
+    rating: 4.4,
+    totalRatings: '1.5k',
+    image: require('../assets/img/products/p2.png'),
+  },
+  {
+    id: 's2',
+    name: 'Denim Jacket',
+    price: 3999,
+    originalPrice: '₹5499',
+    discount: '27% OFF',
+    rating: 4.6,
+    totalRatings: '890',
+    badge: 'New',
+    image: require('../assets/img/products/p4.png'),
+  },
+  {
+    id: 's3',
+    name: 'Running Shoes',
+    price: 2799,
+    rating: 4.2,
+    totalRatings: '2.3k',
+    image: require('../assets/img/products/p3.png'),
+  },
+  {
+    id: 's4',
+    name: 'Floral Top',
+    price: 899,
+    originalPrice: '₹1299',
+    discount: '31% OFF',
+    rating: 4.5,
+    totalRatings: '1.1k',
+    image: require('../assets/img/products/p5.png'),
+  },
+];
+
+
+// ────────────────────── SIMPLE CARD (flex-wrap) ──────────────────────
+type SimpleCardProps = { product: Product; onPress?: () => void };
+
+const SimpleCard: React.FC<SimpleCardProps> = ({ product, onPress }) => {
+  return (
+    <TouchableOpacity activeOpacity={0.85} style={styles.simpleCard} onPress={onPress}>
+      <ImageBackground
+        source={product.image}
+        style={styles.simpleImage}
+        imageStyle={styles.simpleImageStyle}
+        resizeMode="cover"
+      >
+        {product.badge && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{product.badge}</Text>
+          </View>
+        )}
+      </ImageBackground>
+
+      <View style={styles.simpleText}>
+        <Text style={styles.simpleTitle} numberOfLines={1}>
+          {product.name}
+        </Text>
+
+        {product.originalPrice && product.discount ? (
+          <View style={styles.simplePriceRow}>
+            <Text style={styles.simplePrice}>₹{product.price}</Text>
+            <Text style={styles.simpleOriginal}>₹{product.originalPrice}</Text>
+            <Text style={styles.simpleDiscount}>{product.discount}</Text>
+          </View>
+        ) : (
+          <Text style={styles.simplePrice}>₹{product.price}</Text>
+        )}
+
+        <View style={styles.simpleStarRow}>
+          {[...Array(5)].map((_, i) => (
+            <SvgXml
+              key={i}
+              xml={i < Math.floor(product.rating || 0) ? ActiveStarSvg : DeactiveStarSvg}
+            />
+          ))}
+          {product.totalRatings && (
+            <Text style={styles.simpleRatingCount}>({product.totalRatings})</Text>
+          )}
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+
 // ---- Product Type ----
 type Product = {
   id: string;
@@ -114,7 +210,9 @@ export default function ProductScreen() {
   const { params } = useRoute<RouteProp<{ params: ProductRouteParams }, 'params'>>();
   const product = params?.product;
   const navigation = useNavigation<any>();
-
+  const openProductDetail = (p: Product) =>
+    navigation.push('ProductDetail', { product: p });
+  
   if (!product) {
     return (
       <View style={styles.center}>
@@ -227,17 +325,43 @@ export default function ProductScreen() {
             </Text>
           </View>
 
-          {/* View Similar */}
-
+          {/* ───── VIEW SIMILAR / COMPARE (buttons) ───── */}
           <View style={styles.flex}>
-            <View style={styles.flex}>
+            <TouchableOpacity style={[styles.flex, styles.viewBtn]}>
               <SvgXml xml={EyeSvg} width={20} height={20} />
-              <Text>View Similar</Text>
-            </View>
-            <View style={styles.flex}>
+              <Text style={styles.viewBtnText}>View Similar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.flex, styles.viewBtn]}>
               <SvgXml xml={CompareSvg} width={20} height={20} />
-              <Text>Add to Compare</Text>
+              <Text style={styles.viewBtnText}>Add to Compare</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* ───── ALL FEATURED HEADER ───── */}
+          <View style={styles.featuredHeader}>
+            <Text style={styles.featuredTitle}>All Featured</Text>
+            <View style={styles.actionsRow}>
+              <View style={styles.actionItem}>
+                <Text style={styles.actionText}>Sort</Text>
+                {/* (you can keep your sort SVG here if you have it) */}
+              </View>
+              <View style={styles.actionItem}>
+                <Text style={styles.actionText}>Filter</Text>
+                {/* (filter SVG) */}
+              </View>
             </View>
+          </View>
+
+          {/* ───── SIMPLE FLEX-WRAP GRID ───── */}
+          <View style={styles.similarWrapContainer}>
+            {SIMILAR_PRODUCTS.map(p => (
+              <SimpleCard
+                key={p.id}
+                product={p}
+                onPress={() => openProductDetail(p)}
+              />
+            ))}
           </View>
 
 
@@ -338,5 +462,73 @@ const styles = StyleSheet.create({
   flex: {
     flexDirection: 'row',
     gap: 8,
-  }
+  },
+    // ───── View Similar / Compare Buttons ─────
+  viewBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: COLORS.text,
+    borderRadius: 8,
+  },
+  viewBtnText: { marginLeft: 6, fontSize: 14, color: '#232327' },
+
+  // ───── Featured Header ─────
+  featuredHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 12,
+  },
+  featuredTitle: { fontSize: 18, fontWeight: '700', color: '#232327' },
+  actionsRow: { flexDirection: 'row', gap: 12 },
+  actionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    gap: 6,
+  },
+  actionText: { fontSize: 14, color: '#232327', fontWeight: '500' },
+
+  // ───── Flex-Wrap Grid ─────
+  similarWrapContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'space-between',
+    paddingBottom: 20,
+  },
+  simpleCard: {
+    width: '48%',
+    height: 300,
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+  },
+  simpleImage: { height: 180, justifyContent: 'flex-start' },
+  simpleImageStyle: { borderRadius: 16 },
+  simpleText: { padding: 10 },
+  simpleTitle: { fontSize: 15, fontWeight: '600', color: COLORS.black },
+  simplePriceRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
+  simplePrice: { fontSize: 15, fontWeight: '600', color: COLORS.black },
+  simpleOriginal: {
+    marginLeft: 6,
+    textDecorationLine: 'line-through',
+    color: '#888',
+    fontSize: 13,
+  },
+  simpleDiscount: { marginLeft: 6, color: COLORS.primary, fontSize: 13, fontWeight: '600' },
+  simpleStarRow: { flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: 6 },
+  simpleRatingCount: { marginLeft: 4, fontSize: 12, color: '#666' },
 });
