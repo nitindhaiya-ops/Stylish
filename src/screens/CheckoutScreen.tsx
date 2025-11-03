@@ -10,49 +10,34 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { SvgXml } from 'react-native-svg';
 import { COLORS } from '../constants/colors';
+import { useCart } from '../hooks/useCart';
 
-// ---- SVG: Edit Icon ----
-const EditSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-  <path d="M14.06 0.940002L15.06 1.94C15.64 2.52 15.64 3.47 15.06 4.06L4.53 14.59L0.940002 16L2.35 12.41L12.88 1.88C13.47 1.29 14.42 1.29 15 1.88L14.06 0.940002Z" fill="#232327"/>
+const EditSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none">
+  <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="#666666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M18.5 2.5L21.5 5.5L12.5 14.5H9.5V11.5L18.5 2.5Z" stroke="#666666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 
-// ---- Dummy Cart Items (same as similar products) ----
-const CART_ITEMS = [
-  {
-    id: 's1',
-    name: 'Slim Fit Shirt',
-    price: 1299,
-    image: require('../assets/img/products/p2.png'),
-    qty: 1,
-  },
-  {
-    id: 's2',
-    name: 'Denim Jacket',
-    price: 3999,
-    image: require('../assets/img/products/p4.png'),
-    qty: 1,
-  },
-];
-
-// ---- Dummy User Address (editable) ----
 const DEFAULT_ADDRESS = {
   name: 'John Doe',
-  email: 'john@example.com',
   phone: '+91 98765 43210',
-  address: '123, MG Road, Near City Mall',
+  address: '123, ABC Apartments, MG Road',
   city: 'Mumbai',
+  state: 'Maharashtra',
   pincode: '400001',
 };
 
 export default function CheckoutScreen() {
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const { cartItems = [], total = 0 } = route.params || {};
+  const { items } = useCart();
+
   const [address, setAddress] = useState(DEFAULT_ADDRESS);
   const [isEditing, setIsEditing] = useState(false);
-
-  const total = CART_ITEMS.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   const handleSave = () => {
     Alert.alert('Success', 'Address updated successfully!');
@@ -60,47 +45,78 @@ export default function CheckoutScreen() {
   };
 
   const handleProceed = () => {
-    navigation.navigate('Payment'); // You can create this later
+    navigation.navigate('Payment', { total });
   };
 
+  const totalItems = cartItems.reduce((sum: number, item: any) => sum + item.quantity, 0);
+
   return (
-    <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Checkout</Text>
         </View>
 
-        {/* Cart Items */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Order Summary</Text>
-          {CART_ITEMS.map(item => (
-            <View key={item.id} style={styles.cartItem}>
-              <Image source={item.image} style={styles.itemImage} />
-              <View style={styles.itemDetails}>
-                <Text style={styles.itemName}>{item.name}</Text>
-                <Text style={styles.itemPrice}>₹{item.price}</Text>
-              </View>
-              <View style={styles.qtyBox}>
-                <Text style={styles.qtyText}>Qty: {item.qty}</Text>
+        {/* Order Summary - Matching Cart Style */}
+        <View style={styles.summaryContainer}>
+          <Text style={styles.summaryTitle}>Order Summary</Text>
+
+          {cartItems.map((item: any) => (
+            <View key={item.id} style={styles.cartItemCard}>
+              <Image source={item.image} style={styles.cartItemImage} />
+              <View style={styles.cartItemDetails}>
+                <View style={styles.cartItemHeader}>
+                  <Text style={styles.cartItemName}>{item.name}</Text>
+                </View>
+
+                <View style={styles.cartItemVariants}>
+                  <Text style={styles.variantText}>Size: {item.size}</Text>
+                  <Text style={styles.variantText}>Color: {item.color}</Text>
+                </View>
+
+                {!item.inStock && (
+                  <Text style={styles.outOfStockText}>Out of Stock</Text>
+                )}
+
+                <View style={styles.cartItemPriceRow}>
+                  <Text style={styles.cartItemPrice}>₹{item.price}</Text>
+                  {item.originalPrice && (
+                    <>
+                      <Text style={styles.originalPrice}>₹{item.originalPrice}</Text>
+                      <Text style={styles.discount}>{item.discount}</Text>
+                    </>
+                  )}
+                </View>
+
+                <View style={styles.cartItemQuantityContainer}>
+                  <Text style={styles.quantityLabel}>Quantity:</Text>
+                  <View style={styles.quantityControls}>
+                    <Text style={styles.quantityText}>{item.quantity}</Text>
+                  </View>
+                </View>
               </View>
             </View>
           ))}
-        </View>
 
-        {/* Price Breakdown */}
-        <View style={styles.priceBreakdown}>
-          <View style={styles.priceRow}>
-            <Text style={styles.priceLabel}>Subtotal</Text>
-            <Text style={styles.priceValue}>₹{total}</Text>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Subtotal ({totalItems} items)</Text>
+            <Text style={styles.summaryValue}>₹{total.toLocaleString()}</Text>
           </View>
-          <View style={styles.priceRow}>
-            <Text style={styles.priceLabel}>Delivery</Text>
-            <Text style={styles.priceValue}>Free</Text>
+
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Shipping</Text>
+            <Text style={styles.summaryValue}>Free</Text>
           </View>
-          <View style={[styles.priceRow, styles.totalRow]}>
+
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Discount</Text>
+            <Text style={[styles.summaryValue, styles.discountValue]}>- ₹0</Text>
+          </View>
+
+          <View style={[styles.summaryRow, styles.totalRow]}>
             <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>₹{total}</Text>
+            <Text style={styles.totalValue}>₹{total.toLocaleString()}</Text>
           </View>
         </View>
 
@@ -117,45 +133,46 @@ export default function CheckoutScreen() {
             <View style={styles.editForm}>
               <TextInput
                 style={styles.input}
-                value={address.name}
-                onChangeText={text => setAddress({ ...address, name: text })}
                 placeholder="Full Name"
+                value={address.name}
+                onChangeText={(text) => setAddress({ ...address, name: text })}
               />
               <TextInput
                 style={styles.input}
-                value={address.email}
-                onChangeText={text => setAddress({ ...address, email: text })}
-                placeholder="Email"
-                keyboardType="email-address"
-              />
-              <TextInput
-                style={styles.input}
+                placeholder="Phone Number"
                 value={address.phone}
-                onChangeText={text => setAddress({ ...address, phone: text })}
-                placeholder="Phone"
+                onChangeText={(text) => setAddress({ ...address, phone: text })}
                 keyboardType="phone-pad"
               />
               <TextInput
                 style={styles.input}
+                placeholder="Address"
                 value={address.address}
-                onChangeText={text => setAddress({ ...address, address: text })}
-                placeholder="Street Address"
+                onChangeText={(text) => setAddress({ ...address, address: text })}
               />
               <TextInput
                 style={styles.input}
-                value={address.city}
-                onChangeText={text => setAddress({ ...address, city: text })}
                 placeholder="City"
+                value={address.city}
+                onChangeText={(text) => setAddress({ ...address, city: text })}
               />
-              <TextInput
-                style={styles.input}
-                value={address.pincode}
-                onChangeText={text => setAddress({ ...address, pincode: text })}
-                placeholder="Pincode"
-                keyboardType="numeric"
-              />
+              <View style={styles.row}>
+                <TextInput
+                  style={[styles.input, styles.halfInput]}
+                  placeholder="State"
+                  value={address.state}
+                  onChangeText={(text) => setAddress({ ...address, state: text })}
+                />
+                <TextInput
+                  style={[styles.input, styles.halfInput]}
+                  placeholder="Pincode"
+                  value={address.pincode}
+                  onChangeText={(text) => setAddress({ ...address, pincode: text })}
+                  keyboardType="numeric"
+                />
+              </View>
 
-              <View style={styles.editButtons}>
+              <View style={styles.buttonRow}>
                 <TouchableOpacity style={styles.cancelBtn} onPress={() => setIsEditing(false)}>
                   <Text style={styles.cancelBtnText}>Cancel</Text>
                 </TouchableOpacity>
@@ -167,10 +184,9 @@ export default function CheckoutScreen() {
           ) : (
             <View style={styles.addressCard}>
               <Text style={styles.addressName}>{address.name}</Text>
-              <Text style={styles.addressText}>{address.email}</Text>
-              <Text style={styles.addressText}>{address.phone}</Text>
-              <Text style={styles.addressText}>{address.address}</Text>
-              <Text style={styles.addressText}>{address.city} - {address.pincode}</Text>
+              <Text style={styles.addressPhone}>{address.phone}</Text>
+              <Text style={styles.addressLine}>{address.address}</Text>
+              <Text style={styles.addressLine}>{address.city}, {address.state} - {address.pincode}</Text>
             </View>
           )}
         </View>
@@ -180,103 +196,263 @@ export default function CheckoutScreen() {
           <Text style={styles.proceedBtnText}>Proceed to Payment</Text>
         </TouchableOpacity>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
-/* ------------------- STYLES ------------------- */
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  safe: { flex: 1, backgroundColor: COLORS.body },
+  container: { flex: 1 },
   header: {
-    padding: 20,
-    paddingTop: 50,
-    borderBottomWidth: 1,
-    borderColor: '#eee',
+    paddingHorizontal: 16,
+    paddingVertical: 20,
   },
-  title: { fontSize: 24, fontWeight: '700', color: COLORS.black },
-
-  section: { padding: 20, backgroundColor: '#f9f9f9', marginVertical: 8 },
-  sectionTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12, color: '#232327' },
-
-  // Cart Item
-  cartItem: {
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#232327',
+  },
+  summaryContainer: {
+    backgroundColor: COLORS.white,
+    marginHorizontal: 16,
+    marginBottom: 20,
+    padding: 20,
+    borderRadius: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  summaryTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#232327',
+    marginBottom: 16,
+  },
+  cartItemCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    flexDirection: 'row',
+    elevation: 1,
+  },
+  cartItemImage: {
+    width: 80,
+    height: 100,
+    borderRadius: 8,
+  },
+  cartItemDetails: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  cartItemHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  cartItemName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.black,
+    flex: 1,
+  },
+  cartItemVariants: {
+    flexDirection: 'row',
+    marginBottom: 6,
+  },
+  variantText: {
+    fontSize: 12,
+    color: '#666',
+    marginRight: 12,
+  },
+  outOfStockText: {
+    fontSize: 12,
+    color: '#FF3B30',
+    fontWeight: '500',
+    marginBottom: 6,
+  },
+  cartItemPriceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 12,
     marginBottom: 12,
-    elevation: 2,
   },
-  itemImage: { width: 60, height: 60, borderRadius: 8 },
-  itemDetails: { flex: 1, marginLeft: 12 },
-  itemName: { fontSize: 15, fontWeight: '600' },
-  itemPrice: { fontSize: 16, color: COLORS.primary, marginTop: 4 },
-  qtyBox: { backgroundColor: '#eee', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
-  qtyText: { fontSize: 13, fontWeight: '600' },
-
-  // Price Breakdown
-  priceBreakdown: { padding: 20, backgroundColor: '#fff' },
-  priceRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  priceLabel: { fontSize: 16, color: '#555' },
-  priceValue: { fontSize: 16, fontWeight: '600' },
-  totalRow: { marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderColor: '#eee' },
-  totalLabel: { fontSize: 18, fontWeight: '700' },
-  totalValue: { fontSize: 20, fontWeight: '700', color: COLORS.primary },
-
-  // Address
+  cartItemPrice: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.black,
+    marginRight: 8,
+  },
+  originalPrice: {
+    fontSize: 14,
+    color: '#888',
+    textDecorationLine: 'line-through',
+    marginRight: 8,
+  },
+  discount: {
+    fontSize: 12,
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  cartItemQuantityContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  quantityLabel: {
+    fontSize: 14,
+    color: '#666',
+  },
+  quantityControls: {
+    backgroundColor: '#F7F8FB',
+    borderRadius: 8,
+    padding: 4,
+    minWidth: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quantityText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.black,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  summaryLabel: {
+    fontSize: 14,
+    color: '#666',
+  },
+  summaryValue: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#232327',
+  },
+  discountValue: {
+    color: COLORS.primary,
+  },
+  totalRow: {
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    paddingTop: 12,
+    marginTop: 4,
+  },
+  totalLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#232327',
+  },
+  totalValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  section: {
+    marginHorizontal: 16,
+    marginBottom: 20,
+  },
   addressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
   },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#232327',
+  },
   addressCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#F8F9FA',
     padding: 16,
     borderRadius: 12,
-    elevation: 1,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
-  addressName: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
-  addressText: { fontSize: 14, color: '#555', marginBottom: 2 },
-
-  // Edit Form
-  editForm: { backgroundColor: '#fff', padding: 16, borderRadius: 12 },
+  addressName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#232327',
+    marginBottom: 4,
+  },
+  addressPhone: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 4,
+  },
+  addressLine: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+  },
+  editForm: {
+    backgroundColor: '#F8F9FA',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
   input: {
+    backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 8,
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     marginBottom: 12,
     fontSize: 14,
   },
-  editButtons: { flexDirection: 'row', justifyContent: 'space-between' },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  halfInput: {
+    width: '48%',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 12,
+  },
   cancelBtn: {
-    flex: 0.48,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#999',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    marginRight: 12,
   },
-  cancelBtnText: { color: '#999', fontWeight: '600' },
+  cancelBtnText: {
+    color: '#666',
+    fontSize: 14,
+    fontWeight: '500',
+  },
   saveBtn: {
-    flex: 0.48,
     backgroundColor: COLORS.primary,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
     borderRadius: 8,
-    alignItems: 'center',
   },
-  saveBtnText: { color: '#fff', fontWeight: '600' },
-
-  // Proceed Button
+  saveBtnText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   proceedBtn: {
-    margin: 20,
     backgroundColor: COLORS.primary,
+    marginHorizontal: 16,
+    marginBottom: 30,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
-  proceedBtnText: { color: '#fff', fontSize: 18, fontWeight: '700' },
+  proceedBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginRight: 8,
+  },
 });

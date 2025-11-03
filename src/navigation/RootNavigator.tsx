@@ -1,8 +1,7 @@
-/*  src/navigation/RootNavigator.tsx  */
+// src/navigation/RootNavigator.tsx
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
 import SplashScreen from '../screens/SplashScreen';
 import SignIn from '../screens/SignIn';
 import SignUp from '../screens/SignUp';
@@ -18,9 +17,9 @@ export type RootStackParamList = {
   SignUp: undefined;
   ForgotPassword: undefined;
   getStarted: undefined;
-  MainTabs: undefined; 
-  Checkout: undefined; 
-  Payment: undefined; 
+  MainTabs: undefined;
+  Checkout: { cartItems: any[]; total: number };
+  Payment: { total: number };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -33,11 +32,9 @@ export default function RootNavigator() {
         <Stack.Screen name="SignIn" component={SignIn} />
         <Stack.Screen name="getStarted" component={getStartedScreen} />
         <Stack.Screen name="SignUp" component={SignUp} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
         <Stack.Screen name="Checkout" component={CheckoutScreen} />
         <Stack.Screen name="Payment" component={PaymentScreen} />
-        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
-
-        {/* THIS IS THE ONLY SCREEN THAT SHOWS THE BOTTOM TABS */}
         <Stack.Screen name="MainTabs" component={TabNavigator} />
       </Stack.Navigator>
     </NavigationContainer>

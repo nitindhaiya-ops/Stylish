@@ -17,7 +17,7 @@ const SignUp: React.FC<Props> = ({ navigation }) => {
   const [password, setPassword] = useState('');
 
   const onSignUp = () => {
-    navigation.replace('Home');
+    navigation.replace('SignUp');
   };
 
   return (

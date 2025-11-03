@@ -1,5 +1,5 @@
-// src/screens/CartScreen.tsx
-import React, { useState } from 'react';
+/* src/screens/CartScreen.tsx */
+import React from 'react';
 import {
   View,
   Text,
@@ -7,76 +7,25 @@ import {
   TouchableOpacity,
   Image,
   FlatList,
-  ScrollView,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Path, G, ClipPath, Rect, Defs, LinearGradient, Stop } from 'react-native-svg';
+import Svg, { Path, G, ClipPath, Rect, Defs } from 'react-native-svg';
 import { COLORS } from '../constants/colors';
+import { useNavigation } from '@react-navigation/native';
+import { useCart, CartItem } from '../hooks/useCart';
 
 const profileIcon = require('../assets/img/profileIcon.png');
 
-type CartItem = {
-  id: string;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  discount?: string;
-  image?: any;
-  size: string;
-  color: string;
-  quantity: number;
-  inStock: boolean;
-};
-
-const CART_ITEMS: CartItem[] = [
-  {
-    id: 'c1',
-    name: 'Classic Tee',
-    price: 799,
-    originalPrice: 999,
-    discount: '20% OFF',
-    image: require('../assets/img/products/p1.png'),
-    size: 'M',
-    color: 'Black',
-    quantity: 1,
-    inStock: true,
-  },
-  {
-    id: 'c2',
-    name: 'Bomber Jacket',
-    price: 4599,
-    originalPrice: 5999,
-    discount: '23% OFF',
-    image: require('../assets/img/products/p4.png'),
-    size: 'L',
-    color: 'Navy Blue',
-    quantity: 1,
-    inStock: true,
-  },
-  {
-    id: 'c3',
-    name: 'Floral Dress',
-    price: 2599,
-    originalPrice: 3299,
-    discount: '21% OFF',
-    image: require('../assets/img/products/p5.png'),
-    size: 'S',
-    color: 'Pink',
-    quantity: 2,
-    inStock: false,
-  },
-];
-
 const CartItemCard: React.FC<{
   item: CartItem;
-  onUpdateQuantity: (id: string, newQuantity: number) => void;
+  onUpdateQuantity: (id: string, qty: number) => void;
   onRemove: (id: string) => void;
 }> = ({ item, onUpdateQuantity, onRemove }) => {
   return (
     <View style={cartItemStyles.card}>
       <Image source={item.image} style={cartItemStyles.image} />
-      
+
       <View style={cartItemStyles.details}>
         <View style={cartItemStyles.header}>
           <Text style={cartItemStyles.name}>{item.name}</Text>
@@ -102,21 +51,19 @@ const CartItemCard: React.FC<{
         )}
 
         <View style={cartItemStyles.priceRow}>
-          {item.originalPrice ? (
+          <Text style={cartItemStyles.price}>₹{item.price}</Text>
+          {item.originalPrice && (
             <>
-              <Text style={cartItemStyles.price}>₹{item.price}</Text>
               <Text style={cartItemStyles.originalPrice}>₹{item.originalPrice}</Text>
               <Text style={cartItemStyles.discount}>{item.discount}</Text>
             </>
-          ) : (
-            <Text style={cartItemStyles.price}>₹{item.price}</Text>
           )}
         </View>
 
         <View style={cartItemStyles.quantityContainer}>
           <Text style={cartItemStyles.quantityLabel}>Quantity:</Text>
           <View style={cartItemStyles.quantityControls}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={cartItemStyles.quantityButton}
               onPress={() => onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))}
               disabled={!item.inStock}
@@ -130,15 +77,17 @@ const CartItemCard: React.FC<{
                 />
               </Svg>
             </TouchableOpacity>
-            
-            <Text style={[
-              cartItemStyles.quantityText,
-              !item.inStock && cartItemStyles.disabledText
-            ]}>
+
+            <Text
+              style={[
+                cartItemStyles.quantityText,
+                !item.inStock && cartItemStyles.disabledText,
+              ]}
+            >
               {item.quantity}
             </Text>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={cartItemStyles.quantityButton}
               onPress={() => onUpdateQuantity(item.id, item.quantity + 1)}
               disabled={!item.inStock}
@@ -268,73 +217,31 @@ const cartItemStyles = StyleSheet.create({
 });
 
 export default function CartScreen() {
-  const [cartItems, setCartItems] = useState<CartItem[]>(CART_ITEMS);
+  const navigation = useNavigation<any>();
+  const {
+    items,
+    updateQuantity,
+    removeItem,
+    clearCart,
+    subtotal,
+    shipping,
+    total,
+    totalItems,
+  } = useCart();
 
-  const updateQuantity = (itemId: string, newQuantity: number) => {
-    setCartItems(prev => 
-      prev.map(item => 
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
-      )
-    );
-  };
-
-  const removeItem = (itemId: string) => {
-    Alert.alert(
-      'Remove Item',
-      'Are you sure you want to remove this item from your cart?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Remove', 
-          style: 'destructive',
-          onPress: () => {
-            setCartItems(prev => prev.filter(item => item.id !== itemId));
-          }
-        },
-      ]
-    );
-  };
-
-  const clearCart = () => {
-    if (cartItems.length === 0) return;
-    
-    Alert.alert(
-      'Clear Cart',
-      'Are you sure you want to remove all items from your cart?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Clear All', 
-          style: 'destructive',
-          onPress: () => setCartItems([])
-        },
-      ]
-    );
-  };
+  const inStockItems = items.filter(item => item.inStock);
 
   const proceedToCheckout = () => {
-    const inStockItems = cartItems.filter(item => item.inStock);
     if (inStockItems.length === 0) {
-      Alert.alert('No items available', 'All items in your cart are out of stock.');
+      Alert.alert('Cannot Proceed', 'No items in stock to checkout.');
       return;
     }
-    
-    Alert.alert(
-      'Proceed to Checkout',
-      `Proceed with ${inStockItems.length} available item(s)?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Checkout', onPress: () => console.log('Proceeding to checkout') },
-      ]
-    );
-  };
 
-  // Calculate totals
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shipping = subtotal > 0 ? 99 : 0;
-  const total = subtotal + shipping;
-  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  const inStockItems = cartItems.filter(item => item.inStock);
+    navigation.navigate('Checkout', {
+      cartItems: items,
+      total,
+    });
+  };
 
   const EmptyCart = () => (
     <View style={styles.emptyContainer}>
@@ -400,14 +307,28 @@ export default function CartScreen() {
               fill="url(#paint1)"
             />
             <Defs>
-              <LinearGradient id="paint0" x1="124.993" y1="24.9993" x2="24.9961" y2="24.9993" gradientUnits="userSpaceOnUse">
-                <Stop offset="0" stopColor="#CFE2FC" />
-                <Stop offset="1" stopColor="#4392F9" />
-              </LinearGradient>
-              <LinearGradient id="paint1" x1="0" y1="74.9949" x2="99.9972" y2="74.9949" gradientUnits="userSpaceOnUse">
-                <Stop offset="0" stopColor="#F8BCC6" />
-                <Stop offset="1" stopColor="#F83758" />
-              </LinearGradient>
+              <linearGradient
+                id="paint0"
+                x1="124.993"
+                y1="24.9993"
+                x2="24.9961"
+                y2="24.9993"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop offset="0" stopColor="#CFE2FC" />
+                <stop offset="1" stopColor="#4392F9" />
+              </linearGradient>
+              <linearGradient
+                id="paint1"
+                x1="0"
+                y1="74.9949"
+                x2="99.9972"
+                y2="74.9949"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop offset="0" stopColor="#F8BCC6" />
+                <stop offset="1" stopColor="#F83758" />
+              </linearGradient>
             </Defs>
           </Svg>
           <Text style={styles.logo}>Stylish</Text>
@@ -426,19 +347,19 @@ export default function CartScreen() {
             {totalItems} {totalItems === 1 ? 'item' : 'items'}
           </Text>
         </View>
-        
-        {cartItems.length > 0 && (
+
+        {items.length > 0 && (
           <TouchableOpacity style={styles.clearAllButton} onPress={clearCart}>
             <Text style={styles.clearAllText}>Clear All</Text>
           </TouchableOpacity>
         )}
       </View>
 
-      {cartItems.length > 0 ? (
+      {items.length > 0 ? (
         <>
           {/* Cart Items */}
           <FlatList
-            data={cartItems}
+            data={items}
             keyExtractor={item => item.id}
             renderItem={({ item }) => (
               <CartItemCard
@@ -454,39 +375,41 @@ export default function CartScreen() {
           {/* Order Summary */}
           <View style={styles.summaryContainer}>
             <Text style={styles.summaryTitle}>Order Summary</Text>
-            
+
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Subtotal ({totalItems} items)</Text>
               <Text style={styles.summaryValue}>₹{subtotal.toLocaleString()}</Text>
             </View>
-            
+
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Shipping</Text>
               <Text style={styles.summaryValue}>
                 {shipping > 0 ? `₹${shipping}` : 'Free'}
               </Text>
             </View>
-            
+
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Discount</Text>
               <Text style={[styles.summaryValue, styles.discountValue]}>- ₹0</Text>
             </View>
-            
+
             <View style={[styles.summaryRow, styles.totalRow]}>
               <Text style={styles.totalLabel}>Total</Text>
               <Text style={styles.totalValue}>₹{total.toLocaleString()}</Text>
             </View>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[
                 styles.checkoutButton,
-                inStockItems.length === 0 && styles.disabledButton
-              ]} 
+                inStockItems.length === 0 && styles.disabledButton,
+              ]}
               onPress={proceedToCheckout}
               disabled={inStockItems.length === 0}
             >
               <Text style={styles.checkoutButtonText}>
-                {inStockItems.length === 0 ? 'No Items Available' : 'Proceed to Checkout'}
+                {inStockItems.length === 0
+                  ? 'No Items Available'
+                  : 'Proceed to Checkout'}
               </Text>
               <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <Path
@@ -507,10 +430,11 @@ export default function CartScreen() {
   );
 }
 
+/* ------------------- STYLES (ONLY ONE!) ------------------- */
 const styles = StyleSheet.create({
-  safe: { 
-    flex: 1, 
-    backgroundColor: COLORS.body 
+  safe: {
+    flex: 1,
+    backgroundColor: COLORS.body,
   },
   header: {
     paddingHorizontal: 16,
@@ -520,16 +444,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  Logoflex: { 
-    flexDirection: 'row', 
-    alignItems: 'center' 
+  Logoflex: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  logo: { 
-    color: COLORS.blue, 
-    fontSize: 20, 
-    fontFamily: 'LibreCaslonText-Bold', 
-    marginTop: 4, 
-    marginLeft: 4 
+  logo: {
+    color: COLORS.blue,
+    fontSize: 20,
+    fontFamily: 'LibreCaslonText-Bold',
+    marginTop: 4,
+    marginLeft: 4,
   },
   cartHeader: {
     flexDirection: 'row',
