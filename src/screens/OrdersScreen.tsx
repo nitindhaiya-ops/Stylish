@@ -15,7 +15,7 @@ import { COLORS } from '../constants/colors';
 import Svg, { Path } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-type OrdersNavigationProp = any; // Keep your types
+type OrdersNavigationProp = any;
 
 export default function OrdersScreen() {
   const navigation = useNavigation<OrdersNavigationProp>();
