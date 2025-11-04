@@ -10,25 +10,38 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Path, G, ClipPath, Rect, Defs } from 'react-native-svg';
+import Svg, {
+  Path,
+  G,
+  ClipPath,
+  Rect,
+  Defs,
+  Stop,
+  LinearGradient as SvgLinearGradient,
+} from 'react-native-svg';
 import { COLORS } from '../constants/colors';
 import { useNavigation } from '@react-navigation/native';
 import { useCart, CartItem } from '../hooks/useCart';
 
 const profileIcon = require('../assets/img/profileIcon.png');
 
+/* ────────────────────── CART ITEM CARD ────────────────────── */
 const CartItemCard: React.FC<{
   item: CartItem;
   onUpdateQuantity: (id: string, qty: number) => void;
   onRemove: (id: string) => void;
 }> = ({ item, onUpdateQuantity, onRemove }) => {
+  if (!item) return null;
+
   return (
     <View style={cartItemStyles.card}>
-      <Image source={item.image} style={cartItemStyles.image} />
+      <Image source={item.image} style={cartItemStyles.image} resizeMode="cover" />
 
       <View style={cartItemStyles.details}>
         <View style={cartItemStyles.header}>
-          <Text style={cartItemStyles.name}>{item.name}</Text>
+          <Text style={cartItemStyles.name} numberOfLines={2}>
+            {item.name}
+          </Text>
           <TouchableOpacity onPress={() => onRemove(item.id)}>
             <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <Path
@@ -71,7 +84,7 @@ const CartItemCard: React.FC<{
               <Svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <Path
                   d="M3 8H13"
-                  stroke={item.inStock ? "#323232" : "#CCCCCC"}
+                  stroke={item.inStock ? '#323232' : '#CCCCCC'}
                   strokeWidth="2"
                   strokeLinecap="round"
                 />
@@ -95,7 +108,7 @@ const CartItemCard: React.FC<{
               <Svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <Path
                   d="M8 3V13M3 8H13"
-                  stroke={item.inStock ? "#323232" : "#CCCCCC"}
+                  stroke={item.inStock ? '#323232' : '#CCCCCC'}
                   strokeWidth="2"
                   strokeLinecap="round"
                 />
@@ -122,74 +135,19 @@ const cartItemStyles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  image: {
-    width: 80,
-    height: 100,
-    borderRadius: 8,
-  },
-  details: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.black,
-    flex: 1,
-    marginRight: 8,
-  },
-  variants: {
-    flexDirection: 'row',
-    marginBottom: 6,
-  },
-  variantText: {
-    fontSize: 12,
-    color: '#666',
-    marginRight: 12,
-  },
-  outOfStockText: {
-    fontSize: 12,
-    color: '#FF3B30',
-    fontWeight: '500',
-    marginBottom: 6,
-  },
-  priceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  price: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.black,
-    marginRight: 8,
-  },
-  originalPrice: {
-    fontSize: 14,
-    color: '#888',
-    textDecorationLine: 'line-through',
-    marginRight: 8,
-  },
-  discount: {
-    fontSize: 12,
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
-  quantityContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  quantityLabel: {
-    fontSize: 14,
-    color: '#666',
-  },
+  image: { width: 80, height: 100, borderRadius: 8 },
+  details: { flex: 1, marginLeft: 12 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
+  name: { fontSize: 16, fontWeight: '600', color: COLORS.black, flex: 1, marginRight: 8 },
+  variants: { flexDirection: 'row', marginBottom: 6 },
+  variantText: { fontSize: 12, color: '#666', marginRight: 12 },
+  outOfStockText: { fontSize: 12, color: '#FF3B30', fontWeight: '500', marginBottom: 6 },
+  priceRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  price: { fontSize: 16, fontWeight: '600', color: COLORS.black, marginRight: 8 },
+  originalPrice: { fontSize: 14, color: '#888', textDecorationLine: 'line-through', marginRight: 8 },
+  discount: { fontSize: 12, color: COLORS.primary, fontWeight: '600' },
+  quantityContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  quantityLabel: { fontSize: 14, color: '#666' },
   quantityControls: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -197,50 +155,33 @@ const cartItemStyles = StyleSheet.create({
     borderRadius: 8,
     padding: 4,
   },
-  quantityButton: {
-    width: 24,
-    height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  quantityText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.black,
-    marginHorizontal: 12,
-    minWidth: 20,
-    textAlign: 'center',
-  },
-  disabledText: {
-    color: '#CCCCCC',
-  },
+  quantityButton: { width: 24, height: 24, justifyContent: 'center', alignItems: 'center' },
+  quantityText: { fontSize: 14, fontWeight: '600', color: COLORS.black, marginHorizontal: 12, minWidth: 20, textAlign: 'center' },
+  disabledText: { color: '#CCCCCC' },
 });
 
+/* ────────────────────── MAIN SCREEN ────────────────────── */
 export default function CartScreen() {
   const navigation = useNavigation<any>();
   const {
-    items,
+    items = [],
     updateQuantity,
     removeItem,
     clearCart,
-    subtotal,
-    shipping,
-    total,
-    totalItems,
-  } = useCart();
+    subtotal = 0,
+    shipping = 0,
+    total = 0,
+    totalItems = 0,
+  } = useCart() || {};
 
-  const inStockItems = items.filter(item => item.inStock);
+  const inStockItems = items.filter((item: CartItem) => item?.inStock);
 
   const proceedToCheckout = () => {
     if (inStockItems.length === 0) {
       Alert.alert('Cannot Proceed', 'No items in stock to checkout.');
       return;
     }
-
-    navigation.navigate('Checkout', {
-      cartItems: items,
-      total,
-    });
+    navigation.navigate('Checkout', { cartItems: items, total });
   };
 
   const EmptyCart = () => (
@@ -266,7 +207,7 @@ export default function CartScreen() {
       <Text style={styles.emptySubtitle}>
         Add some stylish items to your cart and they will appear here
       </Text>
-      <TouchableOpacity style={styles.shopButton}>
+      <TouchableOpacity style={styles.shopButton} onPress={() => navigation.navigate('Home')}>
         <Text style={styles.shopButtonText}>Continue Shopping</Text>
       </TouchableOpacity>
     </View>
@@ -274,9 +215,9 @@ export default function CartScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      {/* Header */}
+      {/* HEADER */}
       <View style={styles.header}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.openDrawer?.()}>
           <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <G clipPath="url(#clip0_1_7348)">
               <Path
@@ -295,7 +236,7 @@ export default function CartScreen() {
         <View style={styles.Logoflex}>
           <Svg width="38" height="38" viewBox="0 0 125 100" fill="none">
             <Path
-              d="M124.993 49.9986C124.993 36.7382 119.725 24.0208 110.349 14.6442C100.972 5.2677 88.255 1.7389e-06 74.9947 0C61.7343 -1.73889e-06 49.017 5.2677 39.6404 14.6442C30.2638 24.0208 24.9961 36.7382 24.9961 49.9986H40.6209C45.7984 49.9986 49.8363 45.6597 51.7328 40.8418C52.9778 37.6787 54.8672 34.7718 57.3174 32.3213C62.0057 27.6331 68.3645 24.9993 74.9947 24.9993C81.6249 24.9993 87.9837 27.6331 92.6719 32.3213C97.3602 37.0096 99.9938 43.3684 99.9938 49.9986H124.993Z"
+              d="M124.993 49.9986C124.993 36.7382 119.725 24.0208 110.349 14.6442C100.972 5.2677 88.255 0 74.9947 0C61.7343 0 49.017 5.2677 39.6404 14.6442C30.2638 24.0208 24.9961 36.7382 24.9961 49.9986H40.6209C45.7984 49.9986 49.8363 45.6597 51.7328 40.8418C52.9778 37.6787 54.8672 34.7718 57.3174 32.3213C62.0057 27.6331 68.3645 24.9993 74.9947 24.9993C81.6249 24.9993 87.9837 27.6331 92.6719 32.3213C97.3602 37.0096 99.9938 43.3684 99.9938 49.9986H124.993Z"
               fill="url(#paint0)"
             />
             <Path
@@ -303,43 +244,29 @@ export default function CartScreen() {
               fill="#4392F9"
             />
             <Path
-              d="M0 49.9954C-9.3931e-07 56.5615 1.29325 63.0631 3.8059 69.1292C6.31858 75.1954 10.0014 80.7072 14.6442 85.35C19.287 89.9925 24.7988 93.6755 30.8649 96.1882C36.931 98.7009 43.4325 99.994 49.9986 99.994C56.5643 99.994 63.0659 98.7009 69.1321 96.1882C75.1982 93.6755 80.71 89.9925 85.3528 85.35C89.9957 80.7072 93.6784 75.1954 96.1911 69.1292C98.7038 63.0631 99.9972 56.5615 99.9972 49.9954H84.3724C79.1948 49.9954 75.157 54.3343 73.2605 59.1519C73.2067 59.2892 73.1512 59.4258 73.0948 59.5625C71.8385 62.5954 69.9971 65.3515 67.6756 67.6727C65.3543 69.994 62.5982 71.8356 59.5653 73.092C56.5324 74.3483 53.2816 74.9949 49.9986 74.9949C46.7156 74.9949 43.4648 74.3483 40.4319 73.092C37.3986 71.8356 34.6429 69.994 32.3213 67.6727C30 65.3515 28.1586 62.5954 26.9022 59.5625C25.6459 56.5293 24.9993 53.2785 24.9993 49.9954H0Z"
+              d="M0 49.9954C0 56.5615 1.29325 63.0631 3.8059 69.1292C6.31858 75.1954 10.0014 80.7072 14.6442 85.35C19.287 89.9925 24.7988 93.6755 30.8649 96.1882C36.931 98.7009 43.4325 99.994 49.9986 99.994C56.5643 99.994 63.0659 98.7009 69.1321 96.1882C75.1982 93.6755 80.71 89.9925 85.3528 85.35C89.9957 80.7072 93.6784 75.1954 96.1911 69.1292C98.7038 63.0631 99.9972 56.5615 99.9972 49.9954H84.3724C79.1948 49.9954 75.157 54.3343 73.2605 59.1519C73.2067 59.2892 73.1512 59.4258 73.0948 59.5625C71.8385 62.5954 69.9971 65.3515 67.6756 67.6727C65.3543 69.994 62.5982 71.8356 59.5653 73.092C56.5324 74.3483 53.2816 74.9949 49.9986 74.9949C46.7156 74.9949 43.4648 74.3483 40.4319 73.092C37.3986 71.8356 34.6429 69.994 32.3213 67.6727C30 65.3515 28.1586 62.5954 26.9022 59.5625C25.6459 56.5293 24.9993 53.2785 24.9993 49.9954H0Z"
               fill="url(#paint1)"
             />
             <Defs>
-              <linearGradient
-                id="paint0"
-                x1="124.993"
-                y1="24.9993"
-                x2="24.9961"
-                y2="24.9993"
-                gradientUnits="userSpaceOnUse"
-              >
-                <stop offset="0" stopColor="#CFE2FC" />
-                <stop offset="1" stopColor="#4392F9" />
-              </linearGradient>
-              <linearGradient
-                id="paint1"
-                x1="0"
-                y1="74.9949"
-                x2="99.9972"
-                y2="74.9949"
-                gradientUnits="userSpaceOnUse"
-              >
-                <stop offset="0" stopColor="#F8BCC6" />
-                <stop offset="1" stopColor="#F83758" />
-              </linearGradient>
+              <SvgLinearGradient id="paint0" x1="124.993" y1="24.9993" x2="24.9961" y2="24.9993" gradientUnits="userSpaceOnUse">
+                <Stop offset="0" stopColor="#CFE2FC" />
+                <Stop offset="1" stopColor="#4392F9" />
+              </SvgLinearGradient>
+              <SvgLinearGradient id="paint1" x1="0" y1="74.9949" x2="99.9972" y2="74.9949" gradientUnits="userSpaceOnUse">
+                <Stop offset="0" stopColor="#F8BCC6" />
+                <Stop offset="1" stopColor="#F83758" />
+              </SvgLinearGradient>
             </Defs>
           </Svg>
           <Text style={styles.logo}>Stylish</Text>
         </View>
 
-        <TouchableOpacity>
-          <Image source={profileIcon} style={{ width: 40, height: 40 }} />
+        <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+          <Image source={profileIcon} style={{ width: 40, height: 40, borderRadius: 20 }} />
         </TouchableOpacity>
       </View>
 
-      {/* Cart Header */}
+      {/* CART HEADER */}
       <View style={styles.cartHeader}>
         <View>
           <Text style={styles.cartTitle}>Shopping Cart</Text>
@@ -347,7 +274,6 @@ export default function CartScreen() {
             {totalItems} {totalItems === 1 ? 'item' : 'items'}
           </Text>
         </View>
-
         {items.length > 0 && (
           <TouchableOpacity style={styles.clearAllButton} onPress={clearCart}>
             <Text style={styles.clearAllText}>Clear All</Text>
@@ -355,12 +281,12 @@ export default function CartScreen() {
         )}
       </View>
 
+      {/* CONTENT */}
       {items.length > 0 ? (
         <>
-          {/* Cart Items */}
           <FlatList
             data={items}
-            keyExtractor={item => item.id}
+            keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <CartItemCard
                 item={item}
@@ -372,44 +298,32 @@ export default function CartScreen() {
             showsVerticalScrollIndicator={false}
           />
 
-          {/* Order Summary */}
           <View style={styles.summaryContainer}>
             <Text style={styles.summaryTitle}>Order Summary</Text>
-
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Subtotal ({totalItems} items)</Text>
               <Text style={styles.summaryValue}>₹{subtotal.toLocaleString()}</Text>
             </View>
-
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Shipping</Text>
-              <Text style={styles.summaryValue}>
-                {shipping > 0 ? `₹${shipping}` : 'Free'}
-              </Text>
+              <Text style={styles.summaryValue}>{shipping > 0 ? `₹${shipping}` : 'Free'}</Text>
             </View>
-
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Discount</Text>
               <Text style={[styles.summaryValue, styles.discountValue]}>- ₹0</Text>
             </View>
-
             <View style={[styles.summaryRow, styles.totalRow]}>
               <Text style={styles.totalLabel}>Total</Text>
               <Text style={styles.totalValue}>₹{total.toLocaleString()}</Text>
             </View>
 
             <TouchableOpacity
-              style={[
-                styles.checkoutButton,
-                inStockItems.length === 0 && styles.disabledButton,
-              ]}
+              style={[styles.checkoutButton, inStockItems.length === 0 && styles.disabledButton]}
               onPress={proceedToCheckout}
               disabled={inStockItems.length === 0}
             >
               <Text style={styles.checkoutButtonText}>
-                {inStockItems.length === 0
-                  ? 'No Items Available'
-                  : 'Proceed to Checkout'}
+                {inStockItems.length === 0 ? 'No Items Available' : 'Proceed to Checkout'}
               </Text>
               <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <Path
@@ -430,12 +344,9 @@ export default function CartScreen() {
   );
 }
 
-/* ------------------- STYLES (ONLY ONE!) ------------------- */
+/* ────────────────────── STYLES ────────────────────── */
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: COLORS.body,
-  },
+  safe: { flex: 1, backgroundColor: COLORS.body },
   header: {
     paddingHorizontal: 16,
     paddingTop: 16,
@@ -444,17 +355,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  Logoflex: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logo: {
-    color: COLORS.blue,
-    fontSize: 20,
-    fontFamily: 'LibreCaslonText-Bold',
-    marginTop: 4,
-    marginLeft: 4,
-  },
+  Logoflex: { flexDirection: 'row', alignItems: 'center' },
+  logo: { color: COLORS.blue, fontSize: 20, fontFamily: 'LibreCaslonText-Bold', marginTop: 4, marginLeft: 4 },
   cartHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -462,30 +364,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 20,
   },
-  cartTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#232327',
-  },
-  cartSubtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
-  },
-  clearAllButton: {
-    backgroundColor: '#FFE6E6',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  clearAllText: {
-    color: '#FF3B30',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  cartList: {
-    paddingBottom: 20,
-  },
+  cartTitle: { fontSize: 24, fontWeight: '700', color: '#232327' },
+  cartSubtitle: { fontSize: 14, color: '#666', marginTop: 4 },
+  clearAllButton: { backgroundColor: '#FFE6E6', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 },
+  clearAllText: { color: '#FF3B30', fontSize: 14, fontWeight: '600' },
+  cartList: { paddingBottom: 20 },
   summaryContainer: {
     backgroundColor: COLORS.white,
     marginHorizontal: 16,
@@ -498,46 +381,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  summaryTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#232327',
-    marginBottom: 16,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  summaryLabel: {
-    fontSize: 14,
-    color: '#666',
-  },
-  summaryValue: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#232327',
-  },
-  discountValue: {
-    color: COLORS.primary,
-  },
-  totalRow: {
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-    paddingTop: 12,
-    marginTop: 4,
-  },
-  totalLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#232327',
-  },
-  totalValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.primary,
-  },
+  summaryTitle: { fontSize: 18, fontWeight: '600', color: '#232327', marginBottom: 16 },
+  summaryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  summaryLabel: { fontSize: 14, color: '#666' },
+  summaryValue: { fontSize: 14, fontWeight: '500', color: '#232327' },
+  discountValue: { color: COLORS.primary },
+  totalRow: { borderTopWidth: 1, borderTopColor: '#f0f0f0', paddingTop: 12, marginTop: 4 },
+  totalLabel: { fontSize: 16, fontWeight: '600', color: '#232327' },
+  totalValue: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   checkoutButton: {
     backgroundColor: COLORS.primary,
     flexDirection: 'row',
@@ -547,45 +398,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginTop: 16,
   },
-  disabledButton: {
-    backgroundColor: '#CCCCCC',
-  },
-  checkoutButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginRight: 8,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 40,
-  },
-  emptyTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#232327',
-    marginTop: 24,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  emptySubtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 32,
-  },
-  shopButton: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  shopButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  disabledButton: { backgroundColor: '#CCCCCC' },
+  checkoutButtonText: { color: '#fff', fontSize: 16, fontWeight: '600', marginRight: 8 },
+  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40 },
+  emptyTitle: { fontSize: 24, fontWeight: '700', color: '#232327', marginTop: 24, marginBottom: 8, textAlign: 'center' },
+  emptySubtitle: { fontSize: 16, color: '#666', textAlign: 'center', lineHeight: 22, marginBottom: 32 },
+  shopButton: { backgroundColor: COLORS.primary, paddingHorizontal: 32, paddingVertical: 12, borderRadius: 8 },
+  shopButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });

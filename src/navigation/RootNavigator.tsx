@@ -10,16 +10,20 @@ import getStartedScreen from '../screens/getStartedScreen';
 import TabNavigator from './TabNavigator';
 import CheckoutScreen from '../screens/CheckoutScreen';
 import PaymentScreen from '../screens/PaymentScreen';
+import OrderTrackingScreen from '../screens/OrderTrackingScreen';
+import OrdersScreen from '../screens/OrdersScreen';
 
 export type RootStackParamList = {
   Splash: undefined;
   SignIn: undefined;
   SignUp: undefined;
+  Orders: undefined;
   ForgotPassword: undefined;
   getStarted: undefined;
   MainTabs: undefined;
   Checkout: { cartItems: any[]; total: number };
   Payment: { total: number };
+  OrderTracking: { orderId: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -33,7 +37,9 @@ export default function RootNavigator() {
         <Stack.Screen name="getStarted" component={getStartedScreen} />
         <Stack.Screen name="SignUp" component={SignUp} />
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
+        <Stack.Screen name="OrderTracking" component={OrderTrackingScreen} />
         <Stack.Screen name="Checkout" component={CheckoutScreen} />
+        <Stack.Screen name="Orders" component={OrdersScreen} />
         <Stack.Screen name="Payment" component={PaymentScreen} />
         <Stack.Screen name="MainTabs" component={TabNavigator} />
       </Stack.Navigator>

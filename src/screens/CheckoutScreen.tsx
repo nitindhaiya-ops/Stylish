@@ -45,9 +45,8 @@ export default function CheckoutScreen() {
   };
 
   const handleProceed = () => {
-    navigation.navigate('Payment', { total });
+    navigation.navigate('Payment', { total, cartItems });
   };
-
   const totalItems = cartItems.reduce((sum: number, item: any) => sum + item.quantity, 0);
 
   return (
