@@ -1,5 +1,5 @@
 // src/screens/SettingsScreen.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -12,15 +12,187 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, G, ClipPath, Rect, Defs, LinearGradient, Stop } from 'react-native-svg';
-import { COLORS } from '../constants/colors';
+import { COLORS, setColors } from '../constants/colors';
+import { useTheme } from '../hooks/useTheme';
 
 const profileIcon = require('../assets/img/profileIcon.png');
 
 export default function SettingsScreen() {
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+  const { theme, isDark, toggleTheme } = useTheme();
   const [biometric, setBiometric] = useState(true);
   const [marketingEmails, setMarketingEmails] = useState(false);
+
+  useEffect(() => {
+    setColors(theme);
+  }, [theme]);
+
+  // Dynamic styles that update when COLORS or isDark changes
+  const styles = useMemo(() => {
+    return StyleSheet.create({
+      safe: {
+        flex: 1,
+        backgroundColor: COLORS.body,
+      },
+      container: {
+        flex: 1,
+        paddingHorizontal: 16,
+      },
+      header: {
+        paddingHorizontal: 16,
+        paddingTop: 16,
+        paddingBottom: 8,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      },
+      Logoflex: {
+        flexDirection: 'row',
+        alignItems: 'center',
+      },
+      logo: {
+        color: COLORS.blue,
+        fontSize: 20,
+        fontFamily: 'LibreCaslonText-Bold',
+        marginTop: 4,
+        marginLeft: 4,
+      },
+      screenTitle: {
+        fontSize: 28,
+        fontWeight: '700',
+        color: COLORS.title,
+        marginTop: 16,
+        marginBottom: 24,
+      },
+      section: {
+        marginBottom: 32,
+      },
+      sectionTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: COLORS.title,
+        marginBottom: 16,
+      },
+      profileCard: {
+        backgroundColor: COLORS.card,
+        borderRadius: 16,
+        padding: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      profileImage: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+      },
+      profileInfo: {
+        flex: 1,
+        marginLeft: 12,
+      },
+      profileName: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: COLORS.title,
+        marginBottom: 4,
+      },
+      profileEmail: {
+        fontSize: 14,
+        color: COLORS.subtitle,
+      },
+      editButton: {
+        backgroundColor: COLORS.primary,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 8,
+      },
+      editButtonText: {
+        color: COLORS.white,
+        fontSize: 14,
+        fontWeight: '600',
+      },
+      settingsGroup: {
+        backgroundColor: COLORS.card,
+        borderRadius: 16,
+        overflow: 'hidden',
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      settingItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 16,
+        paddingHorizontal: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.border,
+      },
+      settingLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+      },
+      iconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        backgroundColor: isDark ? '#333333' : '#F7F8FB',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+      },
+      destructiveIcon: {
+        backgroundColor: '#FFE6E6',
+      },
+      settingTextContainer: {
+        flex: 1,
+      },
+      settingTitle: {
+        fontSize: 16,
+        fontWeight: '500',
+        color: COLORS.title,
+        marginBottom: 2,
+      },
+      settingSubtitle: {
+        fontSize: 12,
+        color: COLORS.subtitle,
+      },
+      destructiveText: {
+        color: '#FF3B30',
+      },
+      logoutButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#FFE6E6',
+        paddingVertical: 16,
+        borderRadius: 12,
+        marginTop: 8,
+      },
+      logoutText: {
+        color: '#FF3B30',
+        fontSize: 16,
+        fontWeight: '600',
+        marginLeft: 8,
+      },
+      versionContainer: {
+        alignItems: 'center',
+        marginTop: 24,
+        marginBottom: 32,
+      },
+      versionText: {
+        fontSize: 12,
+        color: COLORS.subtitle,
+      },
+    });
+  }, [COLORS, isDark]);
 
   const handleLogout = () => {
     Alert.alert(
@@ -44,18 +216,18 @@ export default function SettingsScreen() {
     );
   };
 
-  const SettingItem = ({ 
-    icon, 
-    title, 
-    subtitle, 
-    hasSwitch = false, 
-    switchValue, 
+  const SettingItem = ({
+    icon,
+    title,
+    subtitle,
+    hasSwitch = false,
+    switchValue,
     onSwitchChange,
     onPress,
-    isDestructive = false 
+    isDestructive = false,
   }: any) => (
-    <TouchableOpacity 
-      style={styles.settingItem} 
+    <TouchableOpacity
+      style={styles.settingItem}
       onPress={onPress}
       activeOpacity={0.7}
     >
@@ -70,20 +242,20 @@ export default function SettingsScreen() {
           {subtitle && <Text style={styles.settingSubtitle}>{subtitle}</Text>}
         </View>
       </View>
-      
+
       {hasSwitch ? (
         <Switch
           value={switchValue}
           onValueChange={onSwitchChange}
-          trackColor={{ false: '#f0f0f0', true: COLORS.primary }}
+          trackColor={{ false: COLORS.border, true: COLORS.primary }}
           thumbColor="#fff"
         />
       ) : (
         <Svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <G clipPath="url(#clip0_1_17092)">
-            <Path 
-              d="M8.35011 5L7.17511 6.175L10.9918 10L7.17511 13.825L8.35011 15L13.35011 10L8.35011 5Z" 
-              fill={isDestructive ? "#FF3B30" : "#323232"} 
+            <Path
+              d="M8.35011 5L7.17511 6.175L10.9918 10L7.17511 13.825L8.35011 15L13.35011 10L8.35011 5Z"
+              fill={isDestructive ? '#FF3B30' : COLORS.icon}
             />
           </G>
           <Defs>
@@ -105,7 +277,7 @@ export default function SettingsScreen() {
             <G clipPath="url(#clip0_1_7348)">
               <Path
                 d="M21 11.01L3 11V13H21V11.01ZM3 16H15V18H3V16ZM21 6H3V8.01L21 8V6Z"
-                fill="#323232"
+                fill={COLORS.icon}
               />
             </G>
             <Defs>
@@ -176,14 +348,14 @@ export default function SettingsScreen() {
                 <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <Path
                     d="M10 16.25C13.4518 16.25 16.25 13.4518 16.25 10C16.25 6.54822 13.4518 3.75 10 3.75C6.54822 3.75 3.75 6.54822 3.75 10C3.75 13.4518 6.54822 16.25 10 16.25Z"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   <Path
                     d="M10 6.25V10L12.5 11.25"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -202,12 +374,12 @@ export default function SettingsScreen() {
                 <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <Path
                     d="M17.5 10C17.5 14.1421 14.1421 17.5 10 17.5C5.85786 17.5 2.5 14.1421 2.5 10C2.5 5.85786 5.85786 2.5 10 2.5C14.1421 2.5 17.5 5.85786 17.5 10Z"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                   />
                   <Path
                     d="M10 6.25V10L12.5 11.25"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -217,8 +389,8 @@ export default function SettingsScreen() {
               title="Dark Mode"
               subtitle="Switch between light and dark theme"
               hasSwitch={true}
-              switchValue={darkMode}
-              onSwitchChange={setDarkMode}
+              switchValue={isDark}
+              onSwitchChange={toggleTheme}
             />
 
             <SettingItem
@@ -226,21 +398,21 @@ export default function SettingsScreen() {
                 <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <Path
                     d="M7.5 9.16667H5.83333C5.39131 9.16667 4.96738 9.34226 4.65482 9.65482C4.34226 9.96738 4.16667 10.3913 4.16667 10.8333V15.8333C4.16667 16.2754 4.34226 16.6993 4.65482 17.0118C4.96738 17.3244 5.39131 17.5 5.83333 17.5H14.1667C14.6087 17.5 15.0326 17.3244 15.3452 17.0118C15.6577 16.6993 15.8333 16.2754 15.8333 15.8333V10.8333C15.8333 10.3913 15.6577 9.96738 15.3452 9.65482C15.0326 9.34226 14.6087 9.16667 14.1667 9.16667H12.5"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   <Path
                     d="M9.16667 13.3333V4.16667C9.16667 3.72464 9.34226 3.30072 9.65482 2.98816C9.96738 2.67559 10.3913 2.5 10.8333 2.5C11.2754 2.5 11.6993 2.67559 12.0118 2.98816C12.3244 3.30072 12.5 3.72464 12.5 4.16667V9.16667"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   <Path
                     d="M7.5 9.16667L10 11.6667L12.5 9.16667"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -259,14 +431,14 @@ export default function SettingsScreen() {
                 <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <Path
                     d="M17.5 3.75H2.5C2.15482 3.75 1.875 4.02982 1.875 4.375V15.625C1.875 15.9702 2.15482 16.25 2.5 16.25H17.5C17.8452 16.25 18.125 15.9702 18.125 15.625V4.375C18.125 4.02982 17.8452 3.75 17.5 3.75Z"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   <Path
                     d="M1.875 6.25H18.125"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -291,21 +463,21 @@ export default function SettingsScreen() {
                 <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <Path
                     d="M10 17.5C14.1421 17.5 17.5 14.1421 17.5 10C17.5 5.85786 14.1421 2.5 10 2.5C5.85786 2.5 2.5 5.85786 2.5 10C2.5 14.1421 5.85786 17.5 10 17.5Z"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   <Path
                     d="M10 13.75V10"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   <Path
                     d="M10 6.25H10.0083"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -321,21 +493,21 @@ export default function SettingsScreen() {
                 <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <Path
                     d="M10 17.5C14.1421 17.5 17.5 14.1421 17.5 10C17.5 5.85786 14.1421 2.5 10 2.5C5.85786 2.5 2.5 5.85786 2.5 10C2.5 14.1421 5.85786 17.5 10 17.5Z"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   <Path
                     d="M7.57495 7.50002C7.77087 6.94308 8.15758 6.47344 8.66658 6.17429C9.17558 5.87515 9.77403 5.7658 10.3559 5.86561C10.9377 5.96543 11.4656 6.26796 11.8458 6.71963C12.2261 7.1713 12.4342 7.74298 12.4333 8.33335C12.4333 10 9.93328 10.8334 9.93328 10.8334"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   <Path
                     d="M10 14.1667H10.0083"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -351,14 +523,14 @@ export default function SettingsScreen() {
                 <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <Path
                     d="M10 17.5C14.1421 17.5 17.5 14.1421 17.5 10C17.5 5.85786 14.1421 2.5 10 2.5C5.85786 2.5 2.5 5.85786 2.5 10C2.5 14.1421 5.85786 17.5 10 17.5Z"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   <Path
                     d="M10 5V10L13.3333 11.6667"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -374,14 +546,14 @@ export default function SettingsScreen() {
                 <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <Path
                     d="M15.8333 17.5V15.8333C15.8333 14.9493 15.4821 14.1014 14.857 13.4763C14.2319 12.8512 13.384 12.5 12.5 12.5H7.5C6.61595 12.5 5.7681 12.8512 5.143 13.4763C4.51785 14.1014 4.16667 14.9493 4.16667 15.8333V17.5"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   <Path
                     d="M10 9.16667C11.3807 9.16667 12.5 8.04738 12.5 6.66667C12.5 5.28595 11.3807 4.16667 10 4.16667C8.61929 4.16667 7.5 5.28595 7.5 6.66667C7.5 8.04738 8.61929 9.16667 10 9.16667Z"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -403,7 +575,7 @@ export default function SettingsScreen() {
                 <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <Path
                     d="M13.3333 5V4.33333C13.3333 3.44928 12.9821 2.60143 12.357 1.97631C11.7319 1.35119 10.884 1 10 1C9.11595 1 8.2681 1.35119 7.64298 1.97631C7.01786 2.60143 6.66667 3.44928 6.66667 4.33333V5M3.33333 5H16.6667C17.1269 5 17.5 5.3731 17.5 5.83333V16.6667C17.5 17.1269 17.1269 17.5 16.6667 17.5H3.33333C2.8731 17.5 2.5 17.1269 2.5 16.6667V5.83333C2.5 5.3731 2.8731 5 3.33333 5Z"
-                    stroke="#323232"
+                    stroke={COLORS.icon}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -480,167 +652,3 @@ export default function SettingsScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safe: { 
-    flex: 1, 
-    backgroundColor: COLORS.body 
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: 16,
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  Logoflex: { 
-    flexDirection: 'row', 
-    alignItems: 'center' 
-  },
-  logo: { 
-    color: COLORS.blue, 
-    fontSize: 20, 
-    fontFamily: 'LibreCaslonText-Bold', 
-    marginTop: 4, 
-    marginLeft: 4 
-  },
-  screenTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#232327',
-    marginTop: 16,
-    marginBottom: 24,
-  },
-  section: {
-    marginBottom: 32,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#232327',
-    marginBottom: 16,
-  },
-  profileCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  profileImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-  },
-  profileInfo: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  profileName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#232327',
-    marginBottom: 4,
-  },
-  profileEmail: {
-    fontSize: 14,
-    color: '#666',
-  },
-  editButton: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  editButtonText: {
-    color: COLORS.white,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  settingsGroup: {
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    overflow: 'hidden',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  settingItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  settingLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: '#F7F8FB',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  destructiveIcon: {
-    backgroundColor: '#FFE6E6',
-  },
-  settingTextContainer: {
-    flex: 1,
-  },
-  settingTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#232327',
-    marginBottom: 2,
-  },
-  settingSubtitle: {
-    fontSize: 12,
-    color: '#666',
-  },
-  destructiveText: {
-    color: '#FF3B30',
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFE6E6',
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginTop: 8,
-  },
-  logoutText: {
-    color: '#FF3B30',
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  versionContainer: {
-    alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 32,
-  },
-  versionText: {
-    fontSize: 12,
-    color: '#999',
-  },
-});
