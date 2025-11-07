@@ -1,5 +1,5 @@
 // src/screens/SearchScreen.tsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,17 +13,10 @@ import {
   ImageSourcePropType,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, {
-  Path,
-  G,
-  Defs,
-  ClipPath,
-  Rect,
-  LinearGradient,
-  Stop,
-} from 'react-native-svg';
+import Svg, { Path, G, Defs, ClipPath, Rect, LinearGradient, Stop } from 'react-native-svg';
 import { SvgXml } from 'react-native-svg';
-import { COLORS } from '../constants/colors';
+import { COLORS, setColors } from '../constants/colors';
+import { useTheme } from '../hooks/useTheme';
 import { useNavigation } from '@react-navigation/native';
 
 // ────────────────────── ASSETS ──────────────────────
@@ -105,34 +98,28 @@ const SAMPLE_PRODUCTS: Product[] = [
 // ────────────────────── CARD DIMENSIONS ──────────────────────
 const { width } = Dimensions.get('window');
 const CARD_MARGIN = 12;
-const NORMAL_WIDTH = (width - CARD_MARGIN * 3) / 2;           // 2-column base
-const LARGE_WIDTH = (width - CARD_MARGIN * 3) / 2;
-// const NORMAL_HEIGHT = 240;
+const NORMAL_WIDTH = (width - CARD_MARGIN * 3) / 2;   // 2-column
+const LARGE_WIDTH = NORMAL_WIDTH;                    // same width – we only change height
 const NORMAL_HEIGHT = 240 * 1.5;
-// const LARGE_HEIGHT = NORMAL_HEIGHT * 1.5;
 const LARGE_HEIGHT = NORMAL_HEIGHT;
 
-// ────────────────────── SVG STARS ──────────────────────
-const ActiveStarSvg = `
+// ────────────────────── SVG STARS (theme-aware) ──────────────────────
+const ActiveStarSvg = (fill: string) => `
 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
-  <path d="M5.83333 8.9075L9.43833 11.0833L8.48167 6.9825L11.6667 4.22333L7.4725 3.8675L5.83333 0L4.19417 3.8675L0 4.22333L3.185 6.9825L2.22833 11.0833L5.83333 8.9075Z" fill="#EDB310"/>
+  <path d="M5.83333 8.9075L9.43833 11.0833L8.48167 6.9825L11.6667 4.22333L7.4725 3.8675L5.83333 0L4.19417 3.8675L0 4.22333L3.185 6.9825L2.22833 11.0833L5.83333 8.9075Z" fill="${fill}"/>
 </svg>
 `;
 
-const DeactiveStarSvg = `
+const DeactiveStarSvg = (fill: string) => `
 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
   <g clip-path="url(#clip0_135_7265)">
-    <path d="M12.8334 5.38996L8.63919 5.02829L7.00002 1.16663L5.36085 5.03413L1.16669 5.38996L4.35169 8.14913L3.39502 12.25L7.00002 10.0741L10.605 12.25L9.65419 8.14913L12.8334 5.38996ZM7.00002 8.98329V3.55829L7.99752 5.91496L10.5525 6.13663L8.61585 7.81663L9.19919 10.3133L7.00002 8.98329Z" fill="#BBBBBB"/>
+    <path d="M12.8334 5.38996L8.63919 5.02829L7.00002 1.16663L5.36085 5.03413L1.16669 5.38996L4.35169 8.14913L3.39502 12.25L7.00002 10.0741L10.605 12.25L9.65419 8.14913L12.8334 5.38996ZM7.00002 8.98329V3.55829L7.99752 5.91496L10.5525 6.13663L8.61585 7.81663L9.19919 10.3133L7.00002 8.98329Z" fill="${fill}"/>
   </g>
-  <defs>
-    <clipPath id="clip0_135_7265">
-      <rect width="14" height="14" fill="white"/>
-    </clipPath>
-  </defs>
+  <defs><clipPath id="clip0_135_7265"><rect width="14" height="14" fill="white"/></clipPath></defs>
 </svg>
 `;
 
-// ────────────────────── PRODUCT CARD COMPONENT ──────────────────────
+// ────────────────────── PRODUCT CARD (receives styles) ──────────────────────
 type ProductCardProps = {
   title: string;
   price: string;
@@ -143,7 +130,8 @@ type ProductCardProps = {
   rating?: number;
   totalRatings?: string;
   badge?: string;
-  isLarge?: boolean;          // new
+  isLarge?: boolean;
+  cardStyles: any;               // <-- passed from hook
 };
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -157,162 +145,195 @@ const ProductCard: React.FC<ProductCardProps> = ({
   totalRatings,
   badge,
   isLarge = false,
+  cardStyles,
 }) => {
   const cardStyle = isLarge
-    ? [styles.card, { width: LARGE_WIDTH, height: LARGE_HEIGHT }]
-    : [styles.card, { width: NORMAL_WIDTH, height: NORMAL_HEIGHT }];
+    ? [cardStyles.card, { width: LARGE_WIDTH, height: LARGE_HEIGHT }]
+    : [cardStyles.card, { width: NORMAL_WIDTH, height: NORMAL_HEIGHT }];
 
   const imageStyle = isLarge
-    ? [styles.image, { height: LARGE_HEIGHT * 0.65 }]
-    : styles.image;
+    ? [cardStyles.image, { height: LARGE_HEIGHT * 0.65 }]
+    : cardStyles.image;
 
   return (
-    <View style={styles.cardContainer} >
-      {/* here on click on navigate to another screen */}
-    <TouchableOpacity
-      activeOpacity={0.8}
-      onPress={onPress}
-      style={cardStyle}
-    >
-      <ImageBackground
-        source={image}
-        style={imageStyle}
-        imageStyle={styles.imageStyle}
-        resizeMode="cover"
-      >
-        {badge && (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{badge}</Text>
-          </View>
-        )}
-      </ImageBackground>
-
-      <View style={styles.textContainer}>
-        <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
-          {title}
-        </Text>
-
-        <Text style={styles.subtitle} numberOfLines={2} ellipsizeMode="tail">
-          {title}
-        </Text>
-
-        {originalPrice && discount ? (
-          <View style={styles.priceRow}>
-            <Text style={styles.price}>{price}</Text>
-            <View style={styles.discountRow}>
-              <Text style={styles.lineThrough}>{originalPrice}</Text>
-              <Text style={styles.offPercent}>{discount}</Text>
+    <View style={cardStyles.cardContainer}>
+      <TouchableOpacity activeOpacity={0.8} onPress={onPress} style={cardStyle}>
+        <ImageBackground
+          source={image}
+          style={imageStyle}
+          imageStyle={cardStyles.imageStyle}
+          resizeMode="cover"
+        >
+          {badge && (
+            <View style={cardStyles.badge}>
+              <Text style={cardStyles.badgeText}>{badge}</Text>
             </View>
-          </View>
-        ) : (
-          <Text style={styles.price}>{price}</Text>
-        )}
-
-        <View style={styles.starWrapper}>
-          {[...Array(5)].map((_, i) => (
-            <SvgXml
-              key={i}
-              xml={i < Math.floor(rating || 0) ? ActiveStarSvg : DeactiveStarSvg}
-            />
-          ))}
-          {totalRatings && (
-            <Text style={styles.ratingCount}>{totalRatings}</Text>
           )}
+        </ImageBackground>
+
+        <View style={cardStyles.textContainer}>
+          <Text style={cardStyles.title} numberOfLines={1} ellipsizeMode="tail">
+            {title}
+          </Text>
+
+          <Text style={cardStyles.subtitle} numberOfLines={2} ellipsizeMode="tail">
+            {title}
+          </Text>
+
+          {originalPrice && discount ? (
+            <View style={cardStyles.priceRow}>
+              <Text style={cardStyles.price}>{price}</Text>
+              <View style={cardStyles.discountRow}>
+                <Text style={cardStyles.lineThrough}>{originalPrice}</Text>
+                <Text style={cardStyles.offPercent}>{discount}</Text>
+              </View>
+            </View>
+          ) : (
+            <Text style={cardStyles.price}>{price}</Text>
+          )}
+
+          <View style={cardStyles.starWrapper}>
+            {[...Array(5)].map((_, i) => (
+              <SvgXml
+                key={i}
+                xml={
+                  i < Math.floor(rating || 0)
+                    ? ActiveStarSvg(COLORS.primary)
+                    : DeactiveStarSvg(COLORS.icon)
+                }
+              />
+            ))}
+            {totalRatings && (
+              <Text style={cardStyles.ratingCount}>{totalRatings}</Text>
+            )}
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  cardContainer: {
-    marginBottom: 12,
-    flexDirection: 'row',
-  },
-  card: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    backgroundColor: '#fff',
-    margin: 6,
-    elevation: 3,
-  },
-  image: {
-    height: NORMAL_HEIGHT * 0.65,
-    justifyContent: 'flex-start',
-    position: 'relative',
-  },
-  imageStyle: {
-    borderRadius: 16,
-  },
-  badge: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  badgeText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  textContainer: {
-    padding: 10,
-    backgroundColor: 'white',
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.black,
-    width: '80%',
-  },
-  subtitle: {
-    fontSize: 13,
-    color: '#666',
-    marginTop: 2,
-    lineHeight: 18,
-    width: '90%',
-  },
-  price: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginVertical: 4,
-  },
-  priceRow: {},
-  discountRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  lineThrough: {
-    textDecorationLine: 'line-through',
-    color: '#888',
-    fontSize: 12,
-  },
-  offPercent: {
-    color: COLORS.primary,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  starWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    marginTop: 4,
-  },
-  ratingCount: {
-    fontSize: 12,
-    color: COLORS.text,
-    marginLeft: 4,
-  },
-});
+// ────────────────────── DYNAMIC STYLES ──────────────────────
+const useStyles = () => {
+  return useMemo(() => {
+    const cardStyles = StyleSheet.create({
+      cardContainer: { marginBottom: 12 },
+      card: {
+        borderRadius: 16,
+        overflow: 'hidden',
+        backgroundColor: COLORS.card,
+        marginHorizontal: 6,
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      image: {
+        height: NORMAL_HEIGHT * 0.65,
+        justifyContent: 'flex-start',
+        position: 'relative',
+      },
+      imageStyle: { borderRadius: 16 },
+      badge: {
+        position: 'absolute',
+        top: 8,
+        left: 8,
+        backgroundColor: COLORS.primary,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 6,
+      },
+      badgeText: { color: '#fff', fontSize: 10, fontWeight: '600' },
+      textContainer: { padding: 10, backgroundColor: COLORS.card },
+      title: { fontSize: 16, fontWeight: '600', color: COLORS.title, width: '80%' },
+      subtitle: { fontSize: 13, color: COLORS.subtitle, marginTop: 2, lineHeight: 18, width: '90%' },
+      price: { fontSize: 14, fontWeight: '500', marginVertical: 4, color: COLORS.title },
+      priceRow: {},
+      discountRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+      lineThrough: { textDecorationLine: 'line-through', color: COLORS.subtitle, fontSize: 12 },
+      offPercent: { color: COLORS.primary, fontSize: 12, fontWeight: '600' },
+      starWrapper: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 4 },
+      ratingCount: { fontSize: 12, color: COLORS.subtitle, marginLeft: 4 },
+    });
+
+    const screenStyles = StyleSheet.create({
+      safe: { flex: 1, backgroundColor: COLORS.body },
+
+      header: {
+        paddingHorizontal: 16,
+        paddingTop: 16,
+        paddingBottom: 8,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      },
+      Logoflex: { flexDirection: 'row', alignItems: 'center' },
+      logo: {
+        color: COLORS.blue,
+        fontSize: 20,
+        fontFamily: 'LibreCaslonText-Bold',
+        marginTop: 4,
+        marginLeft: 4,
+      },
+
+      searchRow: {
+        paddingHorizontal: 16,
+        marginTop: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+      },
+      searchWrapper: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: COLORS.card,
+        borderRadius: 12,
+        paddingHorizontal: 8,
+      },
+      iconLeft: { padding: 8 },
+      iconRight: { padding: 8 },
+      searchInput: {
+        flex: 1,
+        paddingVertical: 10,
+        paddingHorizontal: 4,
+        fontSize: 16,
+        color: COLORS.title,
+      },
+
+      featuredHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+      },
+      featuredTitle: { fontSize: 18, fontWeight: '700', color: COLORS.title },
+      actionsRow: { flexDirection: 'row', gap: 20 },
+      actionItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: COLORS.card,
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+        borderRadius: 8,
+        gap: 6,
+      },
+      actionText: { fontSize: 14, color: COLORS.title, fontWeight: '500' },
+
+      productList: { paddingHorizontal: CARD_MARGIN, paddingBottom: 20 },
+      row: { flexDirection: 'row', justifyContent: 'space-between' },
+      emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60 },
+      emptyText: { fontSize: 16, color: COLORS.subtitle },
+    });
+
+    return { cardStyles, screenStyles };
+  }, [COLORS]);
+};
 
 // ────────────────────── HELPERS ──────────────────────
 const pairProducts = (list: Product[]) => {
-  const pairs: { left: Product; right: Product; rowIndex: number }[] = [];
+  const pairs: { left: Product; right?: Product; rowIndex: number }[] = [];
   for (let i = 0; i < list.length; i += 2) {
     const left = list[i];
     const right = list[i + 1] ?? null;
@@ -325,6 +346,14 @@ const pairProducts = (list: Product[]) => {
 export default function SearchScreen() {
   const [query, setQuery] = useState('');
   const navigation = useNavigation<any>();
+  const { theme } = useTheme();
+
+  // Apply theme colours globally
+  useEffect(() => {
+    setColors(theme);
+  }, [theme]);
+
+  const { cardStyles, screenStyles } = useStyles();
 
   const filteredProducts = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -345,13 +374,11 @@ export default function SearchScreen() {
             <G clipPath="url(#clip0_1_7348)">
               <Path
                 d="M21 11.01L3 11V13H21V11.01ZM3 16H15V18H3V16ZM21 6H3V8.01L21 8V6Z"
-                fill="#323232"
+                fill={COLORS.icon}
               />
             </G>
             <Defs>
-              <ClipPath id="clip0_1_7348">
-                <Rect width="24" height="24" rx="12" fill="white" />
-              </ClipPath>
+              <ClipPath id="clip0_1_7348"><Rect width="24" height="24" rx="12" fill="white" /></ClipPath>
             </Defs>
           </Svg>
         </TouchableOpacity>
@@ -398,19 +425,16 @@ export default function SearchScreen() {
               <G clipPath="url(#clip0_1_17043)">
                 <Path
                   d="M12.9167 11.6667H12.2583L12.025 11.4417C12.8417 10.4917 13.3333 9.25833 13.3333 7.91667C13.3333 4.925 10.9083 2.5 7.91667 2.5C4.925 2.5 2.5 4.925 2.5 7.91667C2.5 10.9083 4.925 13.3333 7.91667 13.3333C9.25833 13.3333 10.4917 12.8417 11.4417 12.025L11.6667 12.2583V12.9167L15.8333 17.075L17.075 15.8333L12.9167 11.6667ZM7.91667 11.6667C5.84167 11.6667 4.16667 9.99167 4.16667 7.91667C4.16667 5.84167 5.84167 4.16667 7.91667 4.16667C9.99167 4.16667 11.6667 5.84167 11.6667 7.91667C11.6667 9.99167 9.99167 11.6667 7.91667 11.6667Z"
-                  fill="#BBBBBB"
+                  fill={COLORS.icon}
                 />
               </G>
-              <Defs>
-                <ClipPath id="clip0_1_17043">
-                  <Rect width="20" height="20" fill="white" />
-                </ClipPath>
-              </Defs>
+              <Defs><ClipPath id="clip0_1_17043"><Rect width="20" height="20" fill="white" /></ClipPath></Defs>
             </Svg>
           </TouchableOpacity>
 
           <TextInput
             placeholder="Search any Product.."
+            placeholderTextColor={COLORS.subtitle}
             value={query}
             onChangeText={setQuery}
             style={screenStyles.searchInput}
@@ -423,14 +447,10 @@ export default function SearchScreen() {
               <G clipPath="url(#clip0_1_17047)">
                 <Path
                   d="M12 14C13.66 14 14.99 12.66 14.99 11L15 5C15 3.34 13.66 2 12 2C10.34 2 9 3.34 9 5V11C9 12.66 10.34 14 12 14ZM10.8 4.9C10.8 4.24 11.34 3.7 12 3.7C12.66 3.7 13.2 4.24 13.2 4.9L13.19 11.1C13.19 11.76 12.66 12.3 12 12.3C11.34 12.3 10.8 11.76 10.8 11.1V4.9ZM17.3 11C17.3 14 14.76 16.1 12 16.1C9.24 16.1 6.7 14 6.7 11H5C5 14.41 7.72 17.23 11 17.72V21H13V17.72C16.28 17.24 19 14.42 19 11H17.3Z"
-                  fill="#BBBBBB"
+                  fill={COLORS.icon}
                 />
               </G>
-              <Defs>
-                <ClipPath id="clip0_1_17047">
-                  <Rect width="24" height="24" fill="white" />
-                </ClipPath>
-              </Defs>
+              <Defs><ClipPath id="clip0_1_17047"><Rect width="24" height="24" fill="white" /></ClipPath></Defs>
             </Svg>
           </TouchableOpacity>
         </View>
@@ -439,9 +459,7 @@ export default function SearchScreen() {
       {/* ==================== FEATURED HEADER ==================== */}
       <View style={screenStyles.featuredHeader}>
         <Text style={screenStyles.featuredTitle}>
-          {filteredProducts.length > 0
-            ? `${filteredProducts.length} Items`
-            : 'No results'}
+          {filteredProducts.length > 0 ? `${filteredProducts.length} Items` : 'No results'}
         </Text>
         <View style={screenStyles.actionsRow}>
           <View style={screenStyles.actionItem}>
@@ -449,15 +467,11 @@ export default function SearchScreen() {
             <Svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <G clipPath="url(#clip0_135_7279)">
                 <Path
-                  d="M11.3247 12.0485V6.38386H9.66234V12.0485H7.16884L10.4935 15.2727L13.8182 12.0485H11.3247ZM5.5065 0.727295L2.18182 3.95154H4.67533V9.61618H6.33767V3.95154H8.83117L5.5065 0.727295ZM11.3247 12.0485V6.38386H9.66234V12.0485H7.16884L10.4935 15.2727L13.8182 12.0485H11.3247ZM5.5065 0.727295L2.18182 3.95154H4.67533V9.61618H6.33767V3.95154H8.83117L5.5065 0.727295Z"
-                  fill="#232327"
+                  d="M11.3247 12.0485V6.38386H9.66234V12.0485H7.16884L10.4935 15.2727L13.8182 12.0485H11.3247ZM5.5065 0.727295L2.18182 3.95154H4.67533V9.61618H6.33767V3.95154H8.83117L5.5065 0.727295Z"
+                  fill={COLORS.title}
                 />
               </G>
-              <Defs>
-                <ClipPath id="clip0_135_7279">
-                  <Rect width="16" height="16" fill="white" />
-                </ClipPath>
-              </Defs>
+              <Defs><ClipPath id="clip0_135_7279"><Rect width="16" height="16" fill="white" /></ClipPath></Defs>
             </Svg>
           </View>
 
@@ -466,27 +480,24 @@ export default function SearchScreen() {
             <Svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <Path
                 d="M14.6666 2H1.33331L6.66665 8.30667V12.6667L9.33331 14V11.1533V8.30667L14.6666 2Z"
-                stroke="#232327"
+                stroke={COLORS.title}
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
-              <Path
-                d="M9.33335 8H6.66669V11.9111L9.33335 13.3333V8Z"
-                fill="#232327"
-              />
+              <Path d="M9.33335 8H6.66669V11.9111L9.33335 13.3333V8Z" fill={COLORS.title} />
             </Svg>
           </View>
         </View>
       </View>
 
-      {/* ==================== PRODUCT GRID (custom rows) ==================== */}
+      {/* ==================== PRODUCT GRID (2-column, alternating size) ==================== */}
       <FlatList
         data={paired}
         keyExtractor={(_, i) => `row-${i}`}
         contentContainerStyle={screenStyles.productList}
         renderItem={({ item: { left, right, rowIndex } }) => {
-          const isOddRow = rowIndex % 2 === 0; // row 0,2,4… → left normal, right large
+          const isOddRow = rowIndex % 2 === 0; // row 0,2,4 → left normal, right large
           return (
             <View style={screenStyles.row}>
               <ProductCard
@@ -499,10 +510,8 @@ export default function SearchScreen() {
                 totalRatings={left.totalRatings}
                 badge={left.badge}
                 isLarge={!isOddRow}
-                onPress={() => {
-    // NEW: navigate to the detail screen inside the same stack
-    navigation.navigate('ProductDetail', { product: left });
-  }}
+                cardStyles={cardStyles}
+                onPress={() => navigation.navigate('ProductDetail', { product: left })}
               />
               {right && (
                 <ProductCard
@@ -515,7 +524,9 @@ export default function SearchScreen() {
                   totalRatings={right.totalRatings}
                   badge={right.badge}
                   isLarge={isOddRow}
-onPress={() => navigation.navigate('ProductDetail', { product: right })}                />
+                  cardStyles={cardStyles}
+                  onPress={() => navigation.navigate('ProductDetail', { product: right })}
+                />
               )}
             </View>
           );
@@ -529,87 +540,3 @@ onPress={() => navigation.navigate('ProductDetail', { product: right })}        
     </SafeAreaView>
   );
 }
-
-/* ==================== SCREEN STYLES ==================== */
-const screenStyles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.body },
-
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  Logoflex: { flexDirection: 'row', alignItems: 'center' },
-  logo: {
-    color: COLORS.blue,
-    fontSize: 20,
-    fontFamily: 'LibreCaslonText-Bold',
-    marginTop: 4,
-    marginLeft: 4,
-  },
-
-  searchRow: {
-    paddingHorizontal: 16,
-    marginTop: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  searchWrapper: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F5F6FA',
-    borderRadius: 12,
-    paddingHorizontal: 8,
-  },
-  iconLeft: { padding: 8 },
-  iconRight: { padding: 8 },
-  searchInput: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 4,
-    fontSize: 16,
-  },
-
-  featuredHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  featuredTitle: { fontSize: 18, fontWeight: '700', color: '#232327' },
-  actionsRow: { flexDirection: 'row', gap: 20 },
-  actionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    gap: 6,
-  },
-  actionText: { fontSize: 14, color: '#232327', fontWeight: '500' },
-
-  productList: {
-    paddingHorizontal: CARD_MARGIN,
-    paddingBottom: 20,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 60,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#777',
-  },
-});
